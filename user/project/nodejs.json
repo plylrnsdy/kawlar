@@ -1,0 +1,4 @@
+{
+    "repetitive":[["0 * * * * *", "http://nodejs.cn/"]],
+    "urls":["http://nodejs.cn/api/"]
+}

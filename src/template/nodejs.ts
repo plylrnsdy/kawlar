@@ -19,7 +19,7 @@ template(
         link('cheerio.extract',
             { args: ['#column2>ul:first-of-type a', 'attr', 'href'], output: 'urls' }),
         link('urls.resolve'),
-        link('to.urlQueue', { inputs: ['urls'] }),
+        link('to.urlQueue'),
     ));
 
 template(

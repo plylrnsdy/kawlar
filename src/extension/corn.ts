@@ -1,42 +1,37 @@
 import * as _ from 'lodash';
-import * as seeker from "../seeker";
-import { scheduleJob, Job } from 'node-schedule';
-import stringify from '../common/stringify';
+import { scheduleJob } from 'node-schedule';
+import Spider from '../core/Sipder';
 
-const { urls, configuration } = seeker;
 
-class Cron {
-
-    private repetitive: { [url: string]: [Job, [string, string]] } = {};
-
-    constructor(entities?: [string, string][]) {
-        entities && _.each(entities, ([corn, url]) => this.schedule(corn, url));
-    }
-
-    schedule(cron: string, url: string) {
-        this.repetitive[url] = [scheduleJob(cron, () => urls.enqueue(url)), [cron, url]];
-    }
-    cancel(url: string) {
+_.assign(Spider.prototype, {
+    schedule: function (cron: string, url: string) {
+        this.repetitive[url] = [scheduleJob(cron, () => this.urls.enqueue(url)), [cron, url]];
+    },
+    cancel: function (url: string) {
         let group = this.repetitive[url];
         if (!group) return;
         group[0].cancel();
         delete this.repetitive[url];
     }
+} as any);
 
-    toString() {
-        let keys = Object.keys(this.repetitive),
-            l = keys.length,
-            array = [] as [string, string][];
-        while (l--) {
-            array.push(this.repetitive[keys[l]][1]);
-        }
-        return stringify(array);
+Spider.deserialize.push(function (data: any) {
+    // @ts-ignore
+    this.repetitive = {};
+    let { repetitive } = data;
+    // @ts-ignore
+    repetitive && _.each(repetitive, ([corn, url]) => this.schedule(corn, url));
+});
+
+Spider.serialize.push(function (json: any) {
+    // @ts-ignore
+    let keys = Object.keys(this.repetitive),
+        l = keys.length,
+        entities = [] as [string, string][];
+    while (l--) {
+        // @ts-ignore
+        entities.push(this.repetitive[keys[l]][1]);
     }
-}
+    json.repetitive = entities;
+});
 
-// load configuration
-const cron = configuration.load('repetitive', Cron);
-configuration.subscribe('repetitive', cron);
-
-// setup to seeker
-_.assign(seeker, { cron });

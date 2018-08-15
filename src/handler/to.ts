@@ -1,11 +1,13 @@
 import * as _ from 'lodash';
-import { handlers, urls as Urls } from "../seeker";
+import { handlers } from "../seeker";
+import Spider from '../core/Sipder';
 
 
 handlers.to = {
     urlQueue: {
-        inputs: ['urls'],
-        fn: (urls: string[]) => _.each(urls, url => Urls.enqueue(url)),
+        inputs: ['spider', 'urls'],
+        fn: (spider: Spider, urls: string[]) =>
+            _.each(urls, url => spider.urls.enqueue(url)),
     },
     console: {
         fn: (data: string[]) => console.dir(data),

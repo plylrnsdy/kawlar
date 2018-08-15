@@ -1,7 +1,9 @@
 import * as _ from 'lodash';
 import urlPattern from './common/string/urlPattern';
 import Configuration from './core/Configuration';
-import Queue from './common/collection/Queue';
+import * as plugin from './core/plugin';
+import Spider from './core/Sipder';
+import * as glob from 'glob';
 
 
 // ========== UserSetup ==========
@@ -34,7 +36,7 @@ function mapResult({ fn, inputs, args = [], output }: any) {
     }
 }
 export function chain(...links: any[]) {
-    let funcs = _.map(links.reverse(), link => mapResult(link));
+    let funcs = _.map(links.reverse(), mapResult);
 
     if (funcs.length === 1) return funcs[0];
 
@@ -61,11 +63,30 @@ export function link(name: string, options: { inputs?: string[], args?: any[], o
 }
 
 
+// ========== UserSetting ==========
+export const globOptions = { root: 'out/src' };
+
+
 export const configuration = new Configuration('user/');
 
 
-// ========== UserSetting ==========
-export const globOptions = { root: 'out/src' };
-// load urls
-export const urls = configuration.load('tasks', Queue);
-configuration.subscribe('tasks', urls);
+plugin.load('/extension/{**/index,*}.js');
+plugin.load('/handler/{**/index,*}.js');
+plugin.load('/template/{**/index,*}.js');
+
+
+export const spiders = new Map<string, Spider>();
+export function create(name: string, data?: any) {
+    let spider = new Spider(data);
+    spiders.set(name, spider);
+    configuration.subscribe('project/' + name, spider);
+}
+export function remove(name: string) {
+    configuration.unsubscribe('project/' + name);
+    spiders.delete(name);
+}
+let projects = glob.sync('user/project/*.json');
+_.each(projects, project => {
+    let name = (<RegExpMatchArray>project.match(/user\/project\/(.+).json$/))[1];
+    create(name, configuration.load('project/' + name));
+});

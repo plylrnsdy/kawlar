@@ -1,6 +1,6 @@
 # Seeker
 
-A modular javascript spider in Node.js.
+A modular spider in Node.js.
 
 ## Feature
 

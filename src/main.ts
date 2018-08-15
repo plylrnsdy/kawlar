@@ -1,30 +1,14 @@
 import * as seeker from "./seeker";
-import * as plugin from './core/plugin';
 import sleep from './common/sleep';
 
 
-const { urls, templates, configuration } = seeker;
+const { configuration, spiders } = seeker;
 
-plugin.load('/extension/{**/index,*}.js');
-plugin.load('/handler/{**/index,*}.js');
-plugin.load('/template/{**/index,*}.js');
-
-
-async function fetch(url: string) {
-    for (const [re, pl] of templates) {
-        if (re.test(url)) {
-            await pl({ url });
-            return;
-        }
-    }
-    console.error('No handlers for url: ' + url);
-}
 
 ; (async function main() {
     while (true) {
-        while (!urls.isEmpty()) {
-            await fetch(urls.dequeue() as string);
-        }
+        for (let [, s] of spiders)
+            while (await s.fetch());
         await sleep(60000);
     }
 })();
