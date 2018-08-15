@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "out",
+
+        "module": "commonjs",
+        "strict": true,
+        "target": "es6",
+
+        "sourceMap": true,
+
+        "removeComments": true
+    },
+    "include": [
+        "src/**/*.ts",
+        "test/**/*.ts"
+    ],
+    "exclude": [
+        ".gulp",
+        ".vscode-test",
+        ".vscode",
+        "bin",
+        "lib",
+        "node_modules",
+        "out"
+    ]
+}
