@@ -6,8 +6,7 @@ import Spider from '../core/Sipder';
 handlers.to = {
     urlQueue: {
         inputs: ['spider', 'urls'],
-        fn: ([spider, urls]: [Spider, string[]]) =>
-            _.each(urls, url => spider.urls.enqueue(url)),
+        fn: ([spider, urls]: [Spider, string[]]) => spider.addUrls(...urls),
     },
     console: {
         fn: ([data]: [string[]]) => console.dir(data),

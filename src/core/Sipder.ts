@@ -36,12 +36,15 @@ export default class Spider {
 
 Spider.extend({
 
-    construct: function ({ name, urls }: any) {
+    construct({ name, urls }: any) {
         this.name = name;
         this.urls = new Queue(urls || []);
     },
 
     methods: {
+        addUrls(...urls: string[]) {
+            this.urls.enqueue(...urls);
+        },
         async fetch() {
             let url = this.urls.dequeue();
             if (!url) return false;
@@ -58,7 +61,7 @@ Spider.extend({
         }
     } as any,
 
-    toJson: function (json: any) {
+    toJson(json: any) {
         json.name = this.name;
         json.urls = this.urls;
     },

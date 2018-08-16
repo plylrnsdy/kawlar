@@ -5,33 +5,33 @@ import Spider from '../core/Sipder';
 
 Spider.extend({
 
-    construct: function (data: any) {
+    construct(data: any) {
         this.repetitive = {};
         let { repetitive } = data;
         repetitive && _.each(repetitive, ([corn, url]) => this.schedule(corn, url));
     },
 
     methods: {
-        schedule: function (cron: string, url: string) {
+        schedule(cron: string, url: string) {
             this.repetitive[url] = [scheduleJob(cron, () => this.urls.enqueue(url)), [cron, url]];
         },
-        cancelSchedule: function (url: string) {
+        cancelSchedule(url: string) {
             let group = this.repetitive[url];
             if (!group) return;
             group[0].cancel();
         },
-        reschedule: function (url: string) {
+        reschedule(url: string) {
             let group = this.repetitive[url];
             if (!group) return;
             group[0].reschedule(true);
         },
-        removeSchedule: function (url: string) {
+        removeSchedule(url: string) {
             this.cancelSchedule(url);
             delete this.repetitive[url];
         },
     } as any,
 
-    toJson: function (json: any) {
+    toJson(json: any) {
         let keys = Object.keys(this.repetitive),
             l = keys.length,
             entities = [] as [string, string][];
