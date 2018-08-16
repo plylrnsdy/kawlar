@@ -5,7 +5,7 @@ A modular spider in Node.js.
 ## Feature
 
 - Modular spider:
-    - Extandable namespace `seeker` which provide tools;
+    - Extandable class `Spider` which fetch web page;
     - Addible free combination of handler;
     - Difference url-pattern has difference handling mode.
 

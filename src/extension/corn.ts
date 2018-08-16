@@ -3,35 +3,41 @@ import { scheduleJob } from 'node-schedule';
 import Spider from '../core/Sipder';
 
 
-_.assign(Spider.prototype, {
-    schedule: function (cron: string, url: string) {
-        this.repetitive[url] = [scheduleJob(cron, () => this.urls.enqueue(url)), [cron, url]];
+Spider.extend({
+
+    construct: function (data: any) {
+        this.repetitive = {};
+        let { repetitive } = data;
+        repetitive && _.each(repetitive, ([corn, url]) => this.schedule(corn, url));
     },
-    cancel: function (url: string) {
-        let group = this.repetitive[url];
-        if (!group) return;
-        group[0].cancel();
-        delete this.repetitive[url];
+
+    methods: {
+        schedule: function (cron: string, url: string) {
+            this.repetitive[url] = [scheduleJob(cron, () => this.urls.enqueue(url)), [cron, url]];
+        },
+        cancelSchedule: function (url: string) {
+            let group = this.repetitive[url];
+            if (!group) return;
+            group[0].cancel();
+        },
+        reschedule: function (url: string) {
+            let group = this.repetitive[url];
+            if (!group) return;
+            group[0].reschedule(true);
+        },
+        removeSchedule: function (url: string) {
+            this.cancelSchedule(url);
+            delete this.repetitive[url];
+        },
+    } as any,
+
+    toJson: function (json: any) {
+        let keys = Object.keys(this.repetitive),
+            l = keys.length,
+            entities = [] as [string, string][];
+        while (l--) {
+            entities.push(this.repetitive[keys[l]][1]);
+        }
+        json.repetitive = entities;
     }
 } as any);
-
-Spider.deserialize.push(function (data: any) {
-    // @ts-ignore
-    this.repetitive = {};
-    let { repetitive } = data;
-    // @ts-ignore
-    repetitive && _.each(repetitive, ([corn, url]) => this.schedule(corn, url));
-});
-
-Spider.serialize.push(function (json: any) {
-    // @ts-ignore
-    let keys = Object.keys(this.repetitive),
-        l = keys.length,
-        entities = [] as [string, string][];
-    while (l--) {
-        // @ts-ignore
-        entities.push(this.repetitive[keys[l]][1]);
-    }
-    json.repetitive = entities;
-});
-

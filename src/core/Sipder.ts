@@ -3,39 +3,63 @@ import Queue from "../common/collection/Queue";
 import { templates } from "../seeker";
 import * as _ from "lodash";
 
+type extension = {
+    construct: (data: any) => void
+    methods: { [x: string]: any }
+    toJson: (json: any) => void
+}
+
 export default class Spider {
 
-    static deserialize: ((data: any) => void)[] = [];
-    static serialize: ((data: any) => void)[] = [];
+    static constructors: ((data: any) => void)[] = [];
+    static toJsonFuncs: ((data: any) => void)[] = [];
+
+    static extend({ methods, construct, toJson }: extension) {
+        Object.assign(Spider.prototype, methods);
+        Spider.constructors.push(construct);
+        Spider.toJsonFuncs.push(toJson);
+    }
 
     [x: string]: any
 
-    constructor(data?: any) {
-        let instance = Object.assign(Object.create(Spider.prototype), data) as Spider;
-        instance.constructor = Spider;
-        instance.urls = new Queue(instance.urls || []);
-        _.each(Spider.deserialize, d => d.call(instance, data));
-        return instance;
-    }
-
-    async fetch() {
-        let url = this.urls.dequeue();
-        if (!url) return false;
-
-        for (const [re, pl] of templates) {
-            if (re.test(url)) {
-                await pl({ spider: this, url });
-                return true;
-            }
-        }
-
-        console.error('No handlers for url: ' + url);
-        return true;
+    constructor(data: any = {}) {
+        _.each(Spider.constructors, d => d.call(this, data));
     }
 
     toString() {
-        let json = { urls: this.urls }
-        _.each(Spider.serialize, d => d.call(this, json));
+        let json = {};
+        _.each(Spider.toJsonFuncs, d => d.call(this, json));
         stringify(json);
     }
 }
+
+
+Spider.extend({
+
+    construct: function ({ name, urls }: any) {
+        this.name = name;
+        this.urls = new Queue(urls || []);
+    },
+
+    methods: {
+        async fetch() {
+            let url = this.urls.dequeue();
+            if (!url) return false;
+
+            for (const [re, pl] of templates) {
+                if (re.test(url)) {
+                    await pl({ spider: this, url });
+                    return true;
+                }
+            }
+
+            console.error('No handlers for url: ' + url);
+            return true;
+        }
+    } as any,
+
+    toJson: function (json: any) {
+        json.name = this.name;
+        json.urls = this.urls;
+    },
+} as any);
