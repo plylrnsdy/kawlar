@@ -25,28 +25,19 @@ export function template(pattern: string | RegExp, pipeline: any) {
     templates.push([re, pipeline]);
 }
 
-function mapResult({ fn, inputs, args = [], output }: any) {
-
-    let $inputs: any[], results;
-    return async function (task: any) {
-        $inputs = _.map(inputs, input => task[input]);
-        results = await fn(...$inputs, ...args);
-        output && (task[output] = results);
-        return task;
-    }
-}
 export function chain(...links: any[]) {
-    let funcs = _.map(links.reverse(), mapResult);
-
-    if (funcs.length === 1) return funcs[0];
 
     // composed functions
-    return async function (x: any) {
-        let result = x, l = funcs.length;
-        while (l--) {
-            result = await funcs[l](result);
+    return async function (task: any) {
+        let i = 0, len = links.length,
+            $inputs: any[], $output: any;
+        while (i < len) {
+            let { fn, inputs, args = [], output } = links[i++];
+            $inputs = _.map(inputs, input => task[input]);
+            $output = await fn($inputs, args);
+            if ($output instanceof Error) return;
+            output && (task[output] = $output);
         }
-        return result;
     }
 }
 export function link(name: string, options: { inputs?: string[], args?: any[], output?: string } = {}) {
@@ -76,17 +67,17 @@ plugin.load('/template/{**/index,*}.js');
 
 
 export const spiders = new Map<string, Spider>();
-export function create(name: string, data?: any) {
+export function createSpider(name: string, data?: any) {
     let spider = new Spider(data);
     spiders.set(name, spider);
     configuration.subscribe('project/' + name, spider);
 }
-export function remove(name: string) {
+export function removeSpider(name: string) {
     configuration.unsubscribe('project/' + name);
     spiders.delete(name);
 }
 let projects = glob.sync('user/project/*.json');
 _.each(projects, project => {
     let name = (<RegExpMatchArray>project.match(/user\/project\/(.+).json$/))[1];
-    create(name, configuration.load('project/' + name));
+    createSpider(name, configuration.load('project/' + name));
 });

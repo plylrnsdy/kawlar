@@ -7,11 +7,11 @@ import * as _ from 'lodash';
 handlers.cheerio = {
     parse: {
         inputs: ['response'], output: '$',
-        fn: (response: RequestResponse) => cheerio.load(response.body),
+        fn: ([response]: [RequestResponse]) => cheerio.load(response.body),
     },
     extract: {
         inputs: ['$'],
-        fn: ($: CheerioStatic, selector: string, method: string, arg: any) =>
+        fn: ([$]: [CheerioStatic], [selector, method, arg]: [string, string, any]) =>
             _.map($(selector) as Cheerio, elem => ($(elem) as any)[method](arg)),
     },
 }
