@@ -1,6 +1,6 @@
 import * as glob from 'glob';
-import { globOptions } from '../seeker';
 
+const globOptions = { root: 'out/src' };
 
 export function load(globs: string) {
 

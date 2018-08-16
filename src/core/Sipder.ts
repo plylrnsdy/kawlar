@@ -1,6 +1,6 @@
 import stringify from "../common/stringify";
 import Queue from "../common/collection/Queue";
-import { templates } from "../seeker";
+import { templates, spiders, configuration } from "../seeker";
 import * as _ from "lodash";
 
 type extension = {
@@ -11,14 +11,7 @@ type extension = {
 
 export default class Spider {
 
-    static constructors: ((data: any) => void)[] = [];
-    static toJsonFuncs: ((data: any) => void)[] = [];
-
-    static extend({ methods, construct, toJson }: extension) {
-        Object.assign(Spider.prototype, methods);
-        Spider.constructors.push(construct);
-        Spider.toJsonFuncs.push(toJson);
-    }
+    // ==================== Base Definition ====================
 
     [x: string]: any
 
@@ -31,6 +24,29 @@ export default class Spider {
         _.each(Spider.toJsonFuncs, d => d.call(this, json));
         stringify(json);
     }
+
+    // ==================== Extension ====================
+
+    static constructors: ((data: any) => void)[] = [];
+    static toJsonFuncs: ((data: any) => void)[] = [];
+
+    static extend({ methods, construct, toJson }: extension) {
+        Object.assign(Spider.prototype, methods);
+        Spider.constructors.push(construct);
+        Spider.toJsonFuncs.push(toJson);
+    }
+
+    // ==================== Manage ====================
+
+    static create(id: string, data: any) {
+        let spider = new Spider(data);
+        spiders.set(id, spider);
+        configuration.subscribe(id, spider);
+    }
+    static remove(id: string) {
+        configuration.unsubscribe(id);
+        spiders.delete(id);
+    }
 }
 
 
@@ -38,7 +54,7 @@ Spider.extend({
 
     construct({ name, urls }: any) {
         this.name = name;
-        this.urls = new Queue(urls || []);
+        this.urls = new Queue(urls);
     },
 
     methods: {

@@ -6,7 +6,22 @@ import Spider from './core/Sipder';
 import * as glob from 'glob';
 
 
-// ========== UserSetup ==========
+export const configuration = new Configuration('user/');
+
+
+// ==================== Spider & Extension ====================
+export const spiders = new Map<string, Spider>();
+
+_.each(glob.sync('project/*.json', { root: 'user' }), project => {
+    let id = (<RegExpMatchArray>project.match(/(.+).json$/))[1];
+    Spider.create(id, configuration.load(id));
+});
+
+plugin.load('/extension/{**/index,*}.js');
+
+
+
+// ==================== Handler ====================
 type handler = {
     [key: string]: handler | {
         inputs?: string[]
@@ -17,14 +32,17 @@ type handler = {
 }
 export const handlers: handler = {};
 
+plugin.load('/handler/{**/index,*}.js');
 
-// ========== UserOptions ==========
+
+
+// ==================== Template ====================
 export const templates: [RegExp, any][] = [];
+
 export function template(pattern: string | RegExp, pipeline: any) {
     let re = typeof pattern === 'string' ? new RegExp(urlPattern(pattern)) : pattern;
     templates.push([re, pipeline]);
 }
-
 export function chain(...links: any[]) {
 
     // composed functions
@@ -53,31 +71,4 @@ export function link(name: string, options: { inputs?: string[], args?: any[], o
     return handler;
 }
 
-
-// ========== UserSetting ==========
-export const globOptions = { root: 'out/src' };
-
-
-export const configuration = new Configuration('user/');
-
-
-plugin.load('/extension/{**/index,*}.js');
-plugin.load('/handler/{**/index,*}.js');
 plugin.load('/template/{**/index,*}.js');
-
-
-export const spiders = new Map<string, Spider>();
-export function createSpider(name: string, data?: any) {
-    let spider = new Spider(data);
-    spiders.set(name, spider);
-    configuration.subscribe('project/' + name, spider);
-}
-export function removeSpider(name: string) {
-    configuration.unsubscribe('project/' + name);
-    spiders.delete(name);
-}
-let projects = glob.sync('user/project/*.json');
-_.each(projects, project => {
-    let name = (<RegExpMatchArray>project.match(/user\/project\/(.+).json$/))[1];
-    createSpider(name, configuration.load('project/' + name));
-});
