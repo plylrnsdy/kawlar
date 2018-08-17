@@ -1,4 +1,4 @@
 {
-    "name": "顺序抓取",
+    "name": "test.queue",
     "urls":["http://nodejs.cn/api/"]
 }

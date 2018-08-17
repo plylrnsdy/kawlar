@@ -12,7 +12,7 @@ handlers.request = {
             return await http.request(url);
         } catch (error) {
             console.error('Requesting failure: ' + url);
-            spider.urls.enqueue(url);
+            spider.add(url);
             return error;
         }
     },

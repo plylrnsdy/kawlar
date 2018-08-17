@@ -13,7 +13,7 @@ Spider.extend({
 
     methods: {
         schedule(cron: string, url: string) {
-            this.repetitive[url] = [scheduleJob(cron, () => this.urls.enqueue(url)), [cron, url]];
+            this.repetitive[url] = [scheduleJob(cron, () => this.add(url)), [cron, url]];
         },
         cancelSchedule(url: string) {
             let group = this.repetitive[url];

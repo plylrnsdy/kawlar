@@ -1,17 +1,7 @@
 import * as seeker from "./seeker";
-import sleep from './common/sleep';
 
 
-const { configuration, spiders } = seeker;
-
-
-; (async function main() {
-    while (true) {
-        for (let [, s] of spiders)
-            while (await s.fetch());
-        await sleep(60000);
-    }
-})();
+seeker.run();
 
 
 process.on('SIGINT', () =>
@@ -19,6 +9,6 @@ process.on('SIGINT', () =>
 
 process.stdin.on('data', (input: Buffer) => {
     if (input.toString()[0].toLowerCase() !== 'y') return;
-    configuration.save();
+    seeker.configuration.save();
     process.exit();
 });

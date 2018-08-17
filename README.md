@@ -33,26 +33,26 @@ template(
     ));
 ```
 
-Input a list of url to `user/tasks.json`:
+Configure your project in `user/<project-name>/project.json`:
 
 ```javascript
-["http://nodejs.cn/api/"]
-// => [ 'Node.js v10.8.0 文档', 'assert - 断言#' ]
-// => ...
-// => [ 'Node.js v10.8.0 文档', 'Zlib#' ]
-```
+{
+    "name": "project-name",
 
-Input a list of cron/url pair to `user/repetitive.json` for repetitive task:
+    // Example `user/test.queue`
+    "urls":["http://nodejs.cn/api/"]
+    // => [ 'Node.js v10.8.0 文档', 'assert - 断言#' ]
+    // => ...
 
-```javascript
-[
-    // A repetitive task
-    [
-        "0 * * * * *",      // Cron
-        "http://nodejs.cn/" // Url
-    ]
+    // Example `user/test.schedule`
+    "repetitive":[
+        // A repetitive task
+        [
+            "0 * * * * *",      // Cron: Repeat in Zeroth seconds of every minute
+            "http://nodejs.cn/" // Url
+        ]]
     // => [ '首页', '下载', '文档', 'GitHub', '云服务器' ]
-]
+}
 ```
 
 ## Install

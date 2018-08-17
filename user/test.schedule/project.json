@@ -1,4 +1,4 @@
 {
-    "name": "定时抓取",
+    "name": "test.schedule",
     "repetitive":[["0 * * * * *", "http://nodejs.cn/"]]
 }

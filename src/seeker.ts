@@ -8,16 +8,29 @@ import * as glob from 'glob';
 
 export const configuration = new Configuration('user/');
 
+const $configuration = configuration.load('configuration') as any;
+configuration.subscribe('configuration', $configuration);
+
+$configuration.actives || ($configuration.actives = []);
+export const actives = $configuration.actives as string[];
+
+
 
 // ==================== Spider & Extension ====================
-export const spiders = new Map<string, Spider>();
+export const spiders = {} as { [id: string]: Spider };
 
-_.each(glob.sync('project/*.json', { root: 'user' }), project => {
-    let id = (<RegExpMatchArray>project.match(/(.+).json$/))[1];
-    Spider.create(id, configuration.load(id));
-});
+export function run() {
+    _.each(actives, name => spiders[name] && spiders[name].start());
+}
 
+// extend Spider
 plugin.load('/extension/{**/index,*}.js');
+
+// load Spider
+_.each(glob.sync('user/*/project.json'), project => {
+    let [, id, name] = (<RegExpMatchArray>project.match(/user\/(([^/]+)\/project).json$/));
+    Spider.create(name, configuration.load(id));
+});
 
 
 
@@ -44,6 +57,7 @@ export function template(pattern: string | RegExp, pipeline: any) {
     templates.push([re, pipeline]);
 }
 export function chain(...links: any[]) {
+    links.push(_.get(handlers, 'promise.resolve'));
 
     // composed functions
     return async function (task: any) {

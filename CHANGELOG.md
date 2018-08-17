@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.9
++ Spider can be active or deactive;
+* New fetching mode:
+    * Concurrent fetching;
+    + Maximum concurrent connections.
+
 ## 0.1.6
 * Refactor namespace `seeker`.
 
