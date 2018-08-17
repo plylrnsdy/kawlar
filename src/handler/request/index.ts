@@ -1,31 +1,30 @@
 import * as _ from 'lodash';
 import Http from './Http';
 import { handlers } from "../../seeker";
-import Spider from '../../core/Sipder';
 
 const http = new Http();
 
 handlers.request = {
-    inputs: ['spider', 'url'], output: 'response',
-    fn: async ([spider, url]: [Spider, string]) => {
+    inputs: ['url'], output: 'response',
+    fn: async function ([url]: [string]) {
         try {
             return await http.request(url);
         } catch (error) {
             console.error('Requesting failure: ' + url);
-            spider.add(url);
+            this.add(url);
             return error;
         }
     },
 }
 handlers.download = {
     inputs: ['urls', 'paths'],
-    fn: async ([urls, paths]: [string[], string[]]) => {
+    fn: async function ([urls, paths]: [string[], string[]]) {
         let url, path;
         while (urls.length) {
             url = urls.pop() as string;
             path = paths.pop() as string;
             try {
-                await http.download(url, path);
+                await http.download(url, 'user/' + this.name + '/' + path);
             } catch (error) {
                 urls.push(url);
                 paths.push(path);

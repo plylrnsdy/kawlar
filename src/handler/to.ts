@@ -5,8 +5,10 @@ import Spider from '../core/Sipder';
 
 handlers.to = {
     urlQueue: {
-        inputs: ['spider', 'urls'],
-        fn: ([spider, urls]: [Spider, string[]]) => spider.add(...urls),
+        inputs: ['urls'],
+        fn: function ([urls]: [string[]]) {
+            this.add(...urls);
+        },
     },
     console: {
         fn: ([data]: [string[]]) => console.dir(data),

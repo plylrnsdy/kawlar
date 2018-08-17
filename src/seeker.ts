@@ -37,6 +37,7 @@ _.each(glob.sync('user/*/project.json'), project => {
 // ==================== Handler ====================
 type handler = {
     [key: string]: handler | {
+        [x: string]: any
         inputs?: string[]
         args?: any[]
         fn: Function
@@ -62,11 +63,11 @@ export function chain(...links: any[]) {
     // composed functions
     return async function (task: any) {
         let i = 0, len = links.length,
-            $inputs: any[], $output: any;
+            { spider } = task, $inputs: any[], $output: any;
         while (i < len) {
-            let { fn, inputs, args = [], output } = links[i++];
+            let { fn, inputs, args, output } = links[i++];
             $inputs = _.map(inputs, input => task[input]);
-            $output = await fn($inputs, args);
+            $output = await fn.call(spider, $inputs, args);
             if ($output instanceof Error) return;
             output && (task[output] = $output);
         }

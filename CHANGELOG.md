@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.1.10
+* Change thisArg `this` of handler pointing to current spider.
+
 ## 0.1.9
 + Spider can be active or deactive;
 * New fetching mode:
