@@ -65,6 +65,10 @@ Install:
 
     npm install
 
+Build:
+
+    tsc -p ./
+
 ## Contribution
 
 Submit the [issues][issues] if you find any bug or have any suggestion.

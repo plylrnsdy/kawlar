@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.1.11
++ Example project of download.
+
 ## 0.1.10
 * Change thisArg `this` of handler pointing to current spider.
 
@@ -24,7 +27,7 @@
 * Better Spider extend functions.
 
 ## 0.1.1
-+ Every project has its spiders.
++ Every project has its spider.
 
 ## 0.1.0
 + Modular spider.

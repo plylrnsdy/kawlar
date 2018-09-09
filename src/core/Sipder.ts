@@ -107,8 +107,6 @@ Spider.extend({
 
     toJson(json: any) {
         json.name = this.name;
-        json.active = this.active;
-        json.idle = this.idle;
         json.maxConnections = this.maxConnections;
         json.urls = this.urls;
     },

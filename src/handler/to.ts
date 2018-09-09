@@ -13,4 +13,10 @@ handlers.to = {
     console: {
         fn: ([data]: [string[]]) => console.dir(data),
     },
+    array: {
+        fn: (array: [any]) => array,
+    },
+    input: {
+        fn: (inputs: undefined, [arg]: [any]) => arg,
+    }
 }
