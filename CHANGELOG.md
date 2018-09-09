@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.1.12
+* New CLI.
+
 ## 0.1.11
 + Example project of download.
 

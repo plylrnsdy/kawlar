@@ -1,14 +1,14 @@
 {
   "name": "seeker",
-  "version": "0.1.0",
-  "description": "",
-  "keywords": [],
+  "version": "0.1.12",
+  "description": "A modular spider in Node.js.",
+  "keywords": ["crawler", "spider"],
   "publisher": "plylrnsdy",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/plylrnsdy/seeker"
   },
-  "main": "index.js",
+  "main": "out/src/main.js",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
     "fs-extra": "^7.0.0",
@@ -31,13 +31,9 @@
     "mocha": "^5.2.0",
     "typescript": "^3.0.1"
   },
-  "license": "MIT",
-  "directories": {
-    "doc": "docs",
-    "test": "test"
-  },
   "scripts": {
     "build": "tsc -p ./"
   },
+  "license": "MIT",
   "author": "plylrnsdy"
 }

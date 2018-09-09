@@ -67,7 +67,7 @@ Install:
 
 Build:
 
-    tsc -p ./
+    npm run build
 
 ## Contribution
 

@@ -7,7 +7,7 @@
             "identifier": "tsc",
             "label": "Build with Typescript",
             "type": "shell",
-            "command": "gulp tsc-compile"
+            "command": "npm run build"
         }
     ]
 }
