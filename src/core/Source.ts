@@ -29,7 +29,7 @@ export default class Source extends Queue<Request> {
     // @ts-ignore
     spider: Spider
 
-    // 域请求对象节流
+    // throttle request by host
     private _throttles: { [host: string]: RequestThrottle }
 
     constructor(rateLimit: { [host: string]: [number, number] }, array?: Request[]) {
@@ -43,7 +43,7 @@ export default class Source extends Queue<Request> {
         this._throttles = _.mapValues(rateLimit, ([limit, time]) =>
             new RequestThrottle(limit, time, item => {
                 super.enqueue(item);
-                // TODO: 放到 RequestThrottle while 外
+                // TODO: put it out of RequestThrottle's while-loop
                 this.spider.emit('canFetch');
             }));
         if (defaultLimit) {

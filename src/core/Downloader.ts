@@ -5,8 +5,7 @@ import sleep from '../common/sleep';
 import Spider from './Spider';
 import { Agent as HttpAgent } from 'http';
 import { Agent as HttpsAgent } from 'https';
-import { Request, Response } from 'node-fetch';
-import { Selector } from './selector';
+import { Request } from 'node-fetch';
 
 
 export default class Downloader {
@@ -52,11 +51,10 @@ export default class Downloader {
 
     async request(uri: Request) {
         let handler = this.spider.handlers.search(uri);
-        if (!handler) throw new Error(`No handler for: ${uri.url}`);
 
         // build request
         _.defaults(uri, handler.headers);
-        uri.agent = this.currentAgent();
+        uri.agent = this.currentAgent(handler.useAgent);
         // request
         let response = await fetch(uri);
 
@@ -66,10 +64,9 @@ export default class Downloader {
         // distribute response
         handler.handle.call(this.spider, res, items);
     }
-    private currentAgent() {
-        // TODO: 使用伪随机数列均匀访问代理?
-        let current = this._currentAgent++;
-        if (this._currentAgent >= this._agents.length) this._currentAgent = 0;
-        return this._agents[current];
+    private currentAgent(useAgent?: boolean) {
+        // Using pseudo random numbers to evenly access agents
+        let current = _.random(1, this._agents.length - 1, false);
+        return useAgent ? this._agents[current] : undefined;
     }
 }

@@ -20,7 +20,7 @@ new Spider({
         items => {
             if (!items.markdown) return;
 
-            items.file = 
+            items.file = items.markdown
             items.extension = 'md';
         },
         items => {
@@ -29,7 +29,7 @@ new Spider({
             let root = __dirname.replace('out\\', ''),
                 file = path.join(root, (<RegExpMatchArray>items.$response.url.match(/^https?:\/\/(?:www\.)?([^?#]+)/))[1]),
                 dir = file.replace(/[^\\]+$/, match => {
-                    if (!match.endsWith(items.extension))
+                    if (items.extension && !match.endsWith(items.extension))
                         file = `${file}.${items.extension}`;
                     return '';
                 });

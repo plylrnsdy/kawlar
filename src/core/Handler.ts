@@ -8,6 +8,7 @@ import { Selector } from './selector';
 interface IRegExpHandler {
     pattern: RegExp
     headers?: Request
+    useAgent?: boolean
     handle: (response: Response & Selector, items: Items) => void
     except?: IRegExpHandler[]
 }
@@ -28,7 +29,7 @@ export default class Handler {
         this._tree = tree as IRegExpHandler[];
     }
 
-    search(uri: Request): IRegExpHandler | undefined {
+    search(uri: Request): IRegExpHandler {
         let match: IRegExpHandler | undefined = undefined;
         let handlers = this._tree;
 
@@ -39,6 +40,8 @@ export default class Handler {
                     if (handler.except) handlers = handler.except; else break find;
                 }
         } while (match);
+
+        if (!match) throw new Error(`No handler for: ${uri.url}`);
 
         return match;
     }

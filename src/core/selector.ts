@@ -44,7 +44,7 @@ async function css(selector: string) {
         if (!self._text) {
             self._text = await self.text();
         }
-        // TODO 编码问题、实体字符问题
+        // TODO: encoding, entities
         self.$ = cheerio.load(self._text);
     }
     let { $ } = self;

@@ -16,14 +16,12 @@ export interface Items extends Record<string, any> {
 export interface IHandler extends Record<string, any> {
     pattern: RegExp | string
     headers?: Request
+    useAgent?: boolean
     handle: (response: Response & Selector, items: Items) => void
     except?: IHandler[]
 }
 
 interface SpiderOptions {
-    /**
-     * { 域名: [ 请求数上限, 一段时间内 ]}
-     */
     rateLimit?: [number, number] | { [host: string]: [number, number] }
     agents?: Array<HttpAgent | HttpsAgent>
     handlers: IHandler[]
