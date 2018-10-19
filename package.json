@@ -1,39 +1,51 @@
 {
   "name": "seeker",
-  "version": "0.1.12",
   "description": "A modular spider in Node.js.",
-  "keywords": ["crawler", "spider"],
-  "publisher": "plylrnsdy",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/plylrnsdy/seeker"
-  },
+  "author": "plylrnsdy",
+  "version": "0.1.12",
+  "keywords": [
+    "crawler",
+    "spider"
+  ],
   "main": "out/src/main.js",
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "jest"
+  },
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
     "fs-extra": "^7.0.0",
-    "glob": "^7.1.2",
-    "lodash": "^4.17.10",
+    "glob": "^7.1.3",
+    "lodash": "^4.17.11",
+    "micromatch": "^3.1.10",
+    "node-fetch": "^2.2.0",
     "node-schedule": "^1.3.0",
-    "request": "^2.87.0"
+    "tracer": "^0.9.1",
+    "xmldom": "^0.1.27",
+    "xpath": "0.0.27"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.4",
-    "@types/cheerio": "^0.22.8",
+    "@types/cheerio": "^0.22.9",
     "@types/fs-extra": "^5.0.4",
-    "@types/glob": "^5.0.35",
-    "@types/lodash": "^4.14.116",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "^10.5.6",
+    "@types/glob": "^5.0.36",
+    "@types/lodash": "^4.14.117",
+    "@types/micromatch": "^3.1.0",
+    "@types/node": "^10.12.0",
+    "@types/node-fetch": "^2.1.2",
     "@types/node-schedule": "^1.2.2",
-    "@types/request": "^2.47.1",
-    "chai": "^4.1.2",
-    "mocha": "^5.2.0",
-    "typescript": "^3.0.1"
-  },
-  "scripts": {
-    "build": "tsc -p ./"
+    "@types/xmldom": "^0.1.29",
+    "jest": "^23.6.0",
+    "typescript": "^3.1.3"
   },
   "license": "MIT",
-  "author": "plylrnsdy"
+  "homepage": "https://github.com/plylrnsdy/seeker#README.md",
+  "bugs": {
+    "url": "https://github.com/plylrnsdy/seeker/issues",
+    "email": "plylrnsdy@163.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/plylrnsdy/seeker.git"
+  }
 }
