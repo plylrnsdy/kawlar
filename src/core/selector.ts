@@ -54,7 +54,7 @@ async function css(selector: string) {
 
     let results = _.map($(sel), el => (<any>$(el))[method](arg));
     return results.length
-        ? results.length === 2 ? results[0] : results
+        ? results.length === 1 ? results[0] : results
         : '';
 }
 css.model = async function cssModel(model: Model<string>): Promise<Result<string | string[]>> {
@@ -88,7 +88,7 @@ async function xpath(path: string): Promise<string | string[]> {
     let selected = xPath.select(path, self._dom);
     let results = _.map(selected, (selected: any) => isAttr ? selected.value : selected.toString());
     return results.length
-        ? results.length === 2 ? results[0] : results
+        ? results.length === 1 ? results[0] : results
         : '';
 }
 xpath.model = async function xpathModel(model: Model<string>): Promise<any> {

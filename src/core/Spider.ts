@@ -17,6 +17,8 @@ export interface IHandler extends Record<string, any> {
     pattern: RegExp | string
     headers?: Request
     useAgent?: boolean
+    // TODO
+    retries?: number
     handle: (response: Response & Selector, items: Items) => void
     except?: IHandler[]
 }

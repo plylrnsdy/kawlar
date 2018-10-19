@@ -2,16 +2,22 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import Spider from '../../src/core/Spider';
 import logger from '../../src/util/logger';
+// @ts-ignore
+import TurndownService = require('turndown');
+// @ts-ignore
+import turndownPluginGfm = require('turndown-plugin-gfm');
 
+const turndownService = new TurndownService();
+turndownService.use(turndownPluginGfm.gfm);
 
 new Spider({
     handlers: [{
-        pattern: 'https://segmentfault.com/*',
+        pattern: 'https://github.com/*/*',
         handle: function (response, items) {
             response
-                .xpath('//*[contains(@class,"page-fmt")]/*[position()<last()-2]')
+                .xpath('//article')
                 .then(page => {
-                    items.markdown = (page as string[]).join('');
+                    items.markdown = page as string;
                     this.pipe(items);
                 });
         },
@@ -20,7 +26,7 @@ new Spider({
         items => {
             if (!items.markdown) return;
 
-            items.file = items.markdown
+            items.file = turndownService.turndown(items.markdown);
             items.extension = 'md';
         },
         items => {
@@ -42,5 +48,5 @@ new Spider({
         },
     ],
 })
-    .enqueue('https://segmentfault.com/markdown')
+    .enqueue('https://github.com/plylrnsdy/seeker')
     .start()
