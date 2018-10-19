@@ -23,14 +23,15 @@ export default class Downloader {
     }
 
     init() {
-        this.spider.on('canFetch', () => this.spider.active && this.start());
+        this.spider.on('canFetch', () => {
+            this._idle = false;
+            this.spider.active && this.start();
+        });
     }
 
     async start() {
         if (this._running) return;
         this._running = true;
-
-        if (!this.spider.isEmpty()) this._idle = false;
 
         while (true) {
             if (!this.spider.active) break;

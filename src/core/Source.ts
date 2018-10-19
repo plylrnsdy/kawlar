@@ -2,6 +2,7 @@ import _ = require('lodash');
 import Queue from '../common/collection/Queue';
 import Spider from './Spider';
 import { Request } from 'node-fetch';
+import { scheduleJob, Job } from 'node-schedule';
 
 class RequestThrottle extends Queue<Request> {
 
@@ -18,6 +19,18 @@ class RequestThrottle extends Queue<Request> {
             }
         }, _time);
     }
+
+    enqueue(...items: Request[]) {
+        items.forEach(uri => {
+            if (this._current--) {
+                this._callback(this.dequeue() as Request);
+            } else {
+                super.enqueue(uri);
+            }
+        });
+
+        return this;
+    }
 }
 
 function getHost(uri: Request) {
@@ -31,6 +44,7 @@ export default class Source extends Queue<Request> {
 
     // throttle request by host
     private _throttles: { [host: string]: RequestThrottle }
+    private _jobs: Job[] = []
 
     constructor(rateLimit: { [host: string]: [number, number] }, array?: Request[]) {
         super();
@@ -50,6 +64,8 @@ export default class Source extends Queue<Request> {
             this._throttles.default = {
                 enqueue: item => {
                     super.enqueue(item);
+                    console.log(this.list.size())
+                    // TODO: debounce
                     this.spider.emit('canFetch');
                 }
             } as RequestThrottle;
@@ -58,6 +74,14 @@ export default class Source extends Queue<Request> {
         array && this.enqueue(...array);
     }
 
+    schedule(cron: string, uri: Request) {
+        let job = scheduleJob(cron, () => {
+            this._throttles.default.enqueue(uri)
+        });
+
+        this._jobs.push(job);
+        return this;
+    }
     enqueue(...items: Request[]) {
         items.forEach(uri => {
             let host = getHost(uri);

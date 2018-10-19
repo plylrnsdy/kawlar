@@ -60,6 +60,11 @@ export default class Spider extends EventEmitter {
         delete options.handlers;
     }
 
+    schedule(schedule: string, uri: string | Request) {
+        isString(uri) && (uri = new Request(uri));
+        this._source.schedule(schedule, uri);
+        return this;
+    }
     enqueue(uri: string | Request) {
         isString(uri) && (uri = new Request(uri));
         this._source.enqueue(uri);
