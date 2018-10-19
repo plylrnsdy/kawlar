@@ -1,58 +1,28 @@
 # Seeker
 
-A modular spider in Node.js.
+A spider framework for Node.js.
 
 ## Feature
 
-- Modular spider:
-    - Extandable class `Spider` which fetch web page;
-    - Addible free combination of handler;
-    - Difference url-pattern has difference handling mode.
+- Set different handler for extracting data from the page's url which match different patterns;
+- Set same handler for saving data in pipeline.
 
 ## Useage
 
-Define a handling mode for a url-pattern:
+```typescript
+new Spider({
+    handlers: [{
+        pattern: 'https://segmentfault.com/*',
+        handle: function (response) {
+            response
+                .xpath('//*[contains(@class,"page-fmt")]/*[position()<last()-2]')
+                .then(page => console.log((page as string[]).join('')));
+        },
+    }],
+})
+    .enqueue('https://segmentfault.com/markdown')
+    .start()
 
-```javascript
-import { template, chain, link } from "../seeker";
-
-template(
-    // UrlPattern, can be a string or RegExp
-    'http{s?}://nodejs.{(?:cn|org)}/api/{[^.]+}.html',
-    // Handling mode, a queue of handler
-    chain(
-        // Handler, a function. More detail can see `handler/*.ts`
-        link('request'),
-        // A handler with default options
-        link('cheerio.parse'),
-        // A handler with user options
-        link('cheerio.extract',
-            // User options
-            { args: ['h1', 'text'], output: 'title' }),
-        link('to.console', { inputs: ['title'] }),
-    ));
-```
-
-Configure your project in `user/<project-name>/project.json`:
-
-```javascript
-{
-    "name": "project-name",
-
-    // Example `user/test.queue`
-    "urls":["http://nodejs.cn/api/"]
-    // => [ 'Node.js v10.8.0 文档', 'assert - 断言#' ]
-    // => ...
-
-    // Example `user/test.schedule`
-    "repetitive":[
-        // A repetitive task
-        [
-            "0 * * * * *",      // Cron: Repeat in Zeroth seconds of every minute
-            "http://nodejs.cn/" // Url
-        ]]
-    // => [ '首页', '下载', '文档', 'GitHub', '云服务器' ]
-}
 ```
 
 ## Install
@@ -67,7 +37,7 @@ Install:
 
 Build:
 
-    npm run build
+    npm run compile
 
 ## Contribution
 

@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.4.0
+* New Design.
+    * concept `Source` inspired by [html-scrapper](https://github.com/harish2704/html-scrapper)
+    * `response { css(), xpath(), re() }`, `pipeline` inspired by [scrapy](https://github.com/scrapy/scrapy)
+    * `response { css.model(), xpath.model(), re.model() }` inspired by [node-scrapy](https://github.com/eeshi/node-scrapy)
+
+---
+
 ## 0.1.12
 * New CLI.
 
