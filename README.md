@@ -28,10 +28,43 @@ new Spider({
 
 ### new Spider(options)
 
-- options
-  - `handlers`: defined how to `handle` url which matches `pattern`
-    - `pattern`: can be `RegExp` or [`globs`](https://github.com/isaacs/node-glob)
-    - `handle(response, items)`: a function to handle response
+Create a Spider for fetching page.
+
+#### options
+- `level`: Show output which level greater or equal to `level`. It can be `log`, `trace`, `debug`, `info`(default), `warn`, `error`, `fatal`.
+- `handlers`: A array of `handler`, defined how to `handle` url which matches `pattern`.
+    - `handler`:
+        - `pattern`: Can be `RegExp` or [`globs`](https://github.com/isaacs/node-glob).
+        - `headers`: Request headers.
+        - `handle(response, items)`: A function to handle response.
+            - `this`: The instance of `Spider`.
+                - `enqueue(uri)`
+                - `pipe(items)`: Pass `items` to pipeline
+            - `response`: See [`node-fetch`](https://github.com/bitinn/node-fetch).
+                - `css(selector)`
+                - `xpath(path)`
+                - `re(regexp)`
+                - `cssModel(model)`
+                - `xpathModel(model)`
+                - `reModel(model)`
+            - `items`:
+                - `pack(object)`
+                - `unpack(props)`
+        - `except`: Another `handler` for match `pattern`, be need its own way to handle data.
+- `pipelines`: Pass `items` to these functions one by one.
+
+### Spider#enqueue(uri)
+
+- `uri` string | Request: A page's uri, which you want to fetch.
+
+### Spider#schedule(cron, uri)
+
+- [`cron`](https://github.com/node-schedule/node-schedule#cron-style-scheduling) string: Cron-style string.
+- `uri` string | Request: A page's uri, which you want to fetch.
+
+### Spider#start()
+
+Start to fetch the `uri` in queue.
 
 ## Install
 
