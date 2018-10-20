@@ -5,7 +5,8 @@ A spider framework for Node.js.
 ## Feature
 
 - Set different handler for extracting data from the page's url which match different patterns;
-- Set same handler for saving data in pipeline.
+- Set same handler for saving data in pipeline;
+- Schedule task fetching in specify time, according to `cron`.
 
 ## Useage
 

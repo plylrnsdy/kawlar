@@ -64,7 +64,6 @@ export default class Source extends Queue<Request> {
             this._throttles.default = {
                 enqueue: item => {
                     super.enqueue(item);
-                    console.log(this.list.size())
                     // TODO: debounce
                     this.spider.emit('canFetch');
                 }

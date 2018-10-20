@@ -14,25 +14,19 @@ interface Result<T> {
 }
 
 export interface Selector {
-    css: {
-        (selector: string): Promise<string | string[]>
-        model(model: Model<string>): Promise<Result<string | string[]>>
-    }
-    xpath: {
-        (path: string): Promise<string | string[]>
-        model(model: Model<string>): Promise<Result<string | string[]>>
-    }
-    re: {
-        (regexp: RegExp | string): Promise<string>
-        model(model: Model<RegExp | string>): Promise<Result<string>>
-    }
+    css(selector: string): Promise<string | string[]>
+    cssModel(model: Model<string>): Promise<Result<string | string[]>>
+
+    xpath(path: string): Promise<string | string[]>
+    xpathModel(model: Model<string>): Promise<Result<string | string[]>>
+
+    re(regexp: RegExp | string): Promise<string>
+    reModel(model: Model<RegExp | string>): Promise<Result<string>>
 }
 
 export default function selectorify(response: Response): Response & Selector {
     let res = response as Response & Selector
-    res.css = css;
-    res.xpath = xpath;
-    res.re = re;
+    Object.assign(res, { css, cssModel, xpath, xpathModel, re, reModel });
     return res;
 }
 
@@ -52,12 +46,12 @@ async function css(selector: string) {
     let [sel, pseudoClass] = selector.split('::');
     let [method, arg] = pseudoClass.split(/\(|\)/);
 
-    let results = _.map($(sel), el => (<any>$(el))[method](arg));
+    let results = _.map($(sel), el => (<any>$(el))[method](arg || undefined));
     return results.length
         ? results.length === 1 ? results[0] : results
         : '';
 }
-css.model = async function cssModel(model: Model<string>): Promise<Result<string | string[]>> {
+async function cssModel(model: Model<string>): Promise<Result<string | string[]>> {
     // @ts-ignore
     let self = this as Response & Selector;
     let models = [model];
@@ -73,6 +67,7 @@ css.model = async function cssModel(model: Model<string>): Promise<Result<string
     }
     return model;
 }
+
 async function xpath(path: string): Promise<string | string[]> {
     // @ts-ignore
     let self = this as Response & Selector & { _text: string, _dom: Document };
@@ -84,14 +79,14 @@ async function xpath(path: string): Promise<string | string[]> {
         self._dom = new DOMParser({ errorHandler: _.noop }).parseFromString(self._text);
     }
 
-    let isAttr = /\/@[^/]$/.test(path);
+    let isAttr = /\/@\w+$/.test(path);
     let selected = xPath.select(path, self._dom);
     let results = _.map(selected, (selected: any) => isAttr ? selected.value : selected.toString());
     return results.length
         ? results.length === 1 ? results[0] : results
         : '';
 }
-xpath.model = async function xpathModel(model: Model<string>): Promise<any> {
+async function xpathModel(model: Model<string>): Promise<any> {
     // @ts-ignore
     let self = this as Response & Selector;
     let models = [model];
@@ -107,6 +102,7 @@ xpath.model = async function xpathModel(model: Model<string>): Promise<any> {
     }
     return model;
 }
+
 async function re(regexp: RegExp | string) {
     // @ts-ignore
     let self = this as Response & Selector & { _text: string };
@@ -117,7 +113,7 @@ async function re(regexp: RegExp | string) {
     let match = self._text.match(regexp);
     return match ? match[0] : '';
 }
-re.model = async function reModel(model: Model<RegExp | string>): Promise<any> {
+async function reModel(model: Model<RegExp | string>): Promise<any> {
     // @ts-ignore
     let self = this as Response & Selector;
     let models = [model];

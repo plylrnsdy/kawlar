@@ -1,33 +1,32 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import _ = require('lodash');
 import Spider from '../../src/core/Spider';
 import logger from '../../src/util/logger';
-// @ts-ignore
-import TurndownService = require('turndown');
-// @ts-ignore
-import turndownPluginGfm = require('turndown-plugin-gfm');
-
-const turndownService = new TurndownService();
-turndownService.use(turndownPluginGfm.gfm);
 
 new Spider({
     handlers: [{
-        pattern: 'https://github.com/*/*',
-        handle: function (response, items) {
-            response
-                .xpath('//article')
-                .then(page => {
-                    items.markdown = page as string;
-                    this.pipe(items);
-                });
+        pattern: 'https://nodejs.org/api/',
+        handle: async function (response, items) {
+            let links = await response.xpath('//*[@id="column2"]/ul[2]//a/@href');
+            this.enqueue(..._.map(links, link => response.url + link));
+        },
+    }, {
+        pattern: 'https://nodejs.org/api/*',
+        handle: async function (response, items) {
+            items.html = await response.cssModel({
+                title: 'title::text()',
+                body: '#column1>div::html()'
+            });
+            this.pipe(items);
         },
     }],
     pipelines: [
         items => {
-            if (!items.markdown) return;
+            if (!items.html) return;
 
-            items.file = turndownService.turndown(items.markdown);
-            items.extension = 'md';
+            items.file = `<!DOCTYPE html>\n<html lang="en">\n<head>\n<title>${items.html.title}</title>\n</head>\n<body>\n${items.html.body}\n</body>\n</html>`;
+            items.extension = 'html';
         },
         items => {
             if (!items.file) return;
@@ -49,5 +48,5 @@ new Spider({
         },
     ],
 })
-    .enqueue('https://github.com/plylrnsdy/seeker')
+    .enqueue('https://nodejs.org/api/')
     .start()

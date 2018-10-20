@@ -3,8 +3,7 @@ import Spider from '../../src/core/Spider';
 new Spider({
     handlers: [{
         pattern: '**',
-        handle: function (response, items) {
-            console.log('pass')
+        handle: response => {
             response
                 .xpath('//h1')
                 .then(title => console.log(title as string));

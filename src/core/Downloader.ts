@@ -1,5 +1,6 @@
 import _ = require('lodash');
 import fetch from 'node-fetch';
+import logger from '../util/logger';
 import selectorify from './selector';
 import sleep from '../common/sleep';
 import Spider from './Spider';
@@ -15,7 +16,6 @@ export default class Downloader {
 
     private _running: boolean = false
     private _idle: boolean = true
-    private _currentAgent: number = 0
 
     constructor(private _agents: Array<HttpAgent | HttpsAgent> = []) {
         _agents.push(_agents[0]);
@@ -57,12 +57,14 @@ export default class Downloader {
         _.defaults(uri, handler.headers);
         uri.agent = this.currentAgent(handler.useAgent);
         // request
+        logger.info('requesting:', uri.url);
         let response = await fetch(uri);
 
         // decorate response
         let res = selectorify(response);
         let items = { $response: res };
         // distribute response
+        logger.log('handling:', uri.url);
         handler.handle.call(this.spider, res, items);
     }
     private currentAgent(useAgent?: boolean) {

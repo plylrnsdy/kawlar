@@ -1,4 +1,6 @@
 import Downloader from './Downloader';
+import Handler from './Handler';
+import logger from '../util/logger';
 import Source from './Source';
 import { Agent as HttpAgent } from 'http';
 import { Agent as HttpsAgent } from 'https';
@@ -6,7 +8,7 @@ import { EventEmitter } from 'events';
 import { isArray, isString } from 'util';
 import { Request, Response } from 'node-fetch';
 import { Selector } from './selector';
-import Handler from './Handler';
+import _ = require('lodash');
 
 
 export interface Items extends Record<string, any> {
@@ -42,6 +44,7 @@ export default class Spider extends EventEmitter {
 
     constructor(private options: SpiderOptions) {
         super();
+        logger.info('Initializing...');
 
         let rateLimit = options.rateLimit;
         rateLimit
@@ -60,14 +63,19 @@ export default class Spider extends EventEmitter {
         delete options.handlers;
     }
 
-    schedule(schedule: string, uri: string | Request) {
+    schedule(cron: string, uri: string | Request) {
         isString(uri) && (uri = new Request(uri));
-        this._source.schedule(schedule, uri);
+        logger.log('schedule:', uri.url);
+        this._source.schedule(cron, uri);
         return this;
     }
-    enqueue(uri: string | Request) {
-        isString(uri) && (uri = new Request(uri));
-        this._source.enqueue(uri);
+    enqueue(...uris: Array<string | Request>) {
+        uris = _.map(uris, uri => {
+            isString(uri) && (uri = new Request(uri));
+            logger.log('enqueue:', uri.url);
+            return uri;
+        });
+        this._source.enqueue(...uris as Request[]);
         return this;
     }
     dequeue() {
@@ -81,6 +89,7 @@ export default class Spider extends EventEmitter {
         return this._active;
     }
     start() {
+        logger.info('starting...');
         this._active = true;
         this._downloader.start();
         return this;
@@ -94,6 +103,7 @@ export default class Spider extends EventEmitter {
         let { pipelines } = this.options;
         if (!pipelines) return;
 
+        logger.log('piping:', items.$response.url);
         for (let line of pipelines) {
             await line(items);
         }
