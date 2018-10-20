@@ -1,6 +1,10 @@
 # Change Log
 
-## 0.4.1
+## 0.4.1.5
++ Add `options.level` limit logger's output;
++ Add counting about fetching operations.
+
+## 0.4.1.3
 + Add output to terminal;
 * Change `response { css.model(), xpath.model(), re.model() }` to `response { cssModel(), xpathModel(), reModel() }`;
 * Fix `response.xpath()` getter likes `/@href` will return `Atrr` instead of its value;

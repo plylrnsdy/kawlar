@@ -1,6 +1,7 @@
 import _ = require('lodash');
 import fetch from 'node-fetch';
 import logger from '../util/logger';
+import Handler from './Handler';
 import selectorify from './selector';
 import sleep from '../common/sleep';
 import Spider from './Spider';
@@ -11,22 +12,21 @@ import { Request } from 'node-fetch';
 
 export default class Downloader {
 
-    // @ts-ignore
-    spider: Spider
-
     private _running: boolean = false
     private _idle: boolean = true
 
-    constructor(private _agents: Array<HttpAgent | HttpsAgent> = []) {
+    constructor(
+        private _spider: Spider,
+        private _agents: Array<HttpAgent | HttpsAgent> = [],
+        private _handler: Handler) {
+
+        _spider.on('canFetch', () => {
+            this._idle = false;
+            this._spider.active && this.start();
+        });
+
         _agents.push(_agents[0]);
         _agents[0] = undefined as any;
-    }
-
-    init() {
-        this.spider.on('canFetch', () => {
-            this._idle = false;
-            this.spider.active && this.start();
-        });
     }
 
     async start() {
@@ -34,13 +34,13 @@ export default class Downloader {
         this._running = true;
 
         while (true) {
-            if (!this.spider.active) break;
+            if (!this._spider.active) break;
             if (this._idle) {
                 await sleep(1000);
                 continue;
             }
 
-            let uri = this.spider.dequeue();
+            let uri = this._spider.dequeue();
             if (!uri) {
                 this._idle = true;
                 continue;
@@ -51,21 +51,22 @@ export default class Downloader {
     }
 
     async request(uri: Request) {
-        let handler = this.spider.handlers.search(uri);
+        let { url } = uri;
+        let handler = this._handler.search(url);
 
         // build request
         _.defaults(uri, handler.headers);
         uri.agent = this.currentAgent(handler.useAgent);
         // request
-        logger.info('requesting:', uri.url);
+        this._spider.emit('request', url);
         let response = await fetch(uri);
 
         // decorate response
         let res = selectorify(response);
         let items = { $response: res };
         // distribute response
-        logger.log('handling:', uri.url);
-        handler.handle.call(this.spider, res, items);
+        this._spider.emit('handle', url);
+        handler.handle.call(this._spider, res, items);
     }
     private currentAgent(useAgent?: boolean) {
         // Using pseudo random numbers to evenly access agents

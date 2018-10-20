@@ -1,5 +1,16 @@
 import * as tracer from 'tracer';
 
+interface Logger {
+    setLevel(level: string): void
+
+    log(...args: any[]): void
+    trace(...args: any[]): void
+    debug(...args: any[]): void
+    info(...args: any[]): void
+    warn(...args: any[]): void
+    error(...args: any[]): void
+    fatal(...args: any[]): void
+}
 
 const logger = tracer.colorConsole({
     level: 0,
@@ -10,6 +21,8 @@ const logger = tracer.colorConsole({
         }],
     dateformat: 'yyyy-mm-dd_hh:MM:ss',
     preprocess: (data: any) => data.title = data.title.toUpperCase(),
-});
+}) as any as Logger;
+
+logger.setLevel = tracer.setLevel;
 
 export default logger;

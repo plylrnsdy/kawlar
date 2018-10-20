@@ -5,6 +5,7 @@ import Spider from '../../src/core/Spider';
 import logger from '../../src/util/logger';
 
 new Spider({
+    level: 'log',
     handlers: [{
         pattern: 'https://nodejs.org/api/',
         handle: async function (response, items) {

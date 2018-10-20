@@ -9,26 +9,29 @@ class RequestThrottle extends Queue<Request> {
     private _timer: NodeJS.Timeout
     private _current: number = 0
 
-    constructor(private _limit: number, private _time: number, private _callback: (uri: Request) => void) {
+    constructor(private _limit: number, private _time: number, private _callback: (...uris: Request[]) => void) {
         super();
 
         this._timer = setInterval(() => {
-            this._current = _limit;
+            this._current = this._limit;
+            let uris: Request[] = [];
             while (!this.isEmpty() && this._current--) {
-                _callback(this.dequeue() as Request);
+                uris.push(this.dequeue() as Request);
             }
-        }, _time);
+
+            _callback.apply(null, uris);
+
+        }, _time * 1000);
     }
 
     enqueue(...items: Request[]) {
-        items.forEach(uri => {
-            if (this._current--) {
-                this._callback(this.dequeue() as Request);
-            } else {
-                super.enqueue(uri);
-            }
-        });
+        let uris: Request[] = [];
+        items.forEach(uri =>
+            this._current--
+                ? uris.push(this.dequeue() as Request)
+                : super.enqueue(uri));
 
+        this._callback.apply(null, uris);
         return this;
     }
 }
@@ -39,33 +42,30 @@ function getHost(uri: Request) {
 
 export default class Source extends Queue<Request> {
 
-    // @ts-ignore
-    spider: Spider
-
     // throttle request by host
     private _throttles: { [host: string]: RequestThrottle }
     private _jobs: Job[] = []
 
-    constructor(rateLimit: { [host: string]: [number, number] }, array?: Request[]) {
+    constructor(private _spider: Spider, rateLimits: { [host: string]: [number, number] }, array?: Request[]) {
         super();
 
-        let defaultLimit;
-        if (rateLimit.default[0] === -1) {
-            defaultLimit = rateLimit.default;
-            delete rateLimit.default;
+        let noDefaultLimit;
+        if (rateLimits.default[0] === -1) {
+            noDefaultLimit = true;
+            delete rateLimits.default;
         }
-        this._throttles = _.mapValues(rateLimit, ([limit, time]) =>
-            new RequestThrottle(limit, time, item => {
-                super.enqueue(item);
-                // TODO: put it out of RequestThrottle's while-loop
-                this.spider.emit('canFetch');
+        this._throttles = _.mapValues(rateLimits, ([limit, time]) =>
+            new RequestThrottle(limit, time, (...items: Request[]) => {
+                super.enqueue(...items);
+                this._spider.emit('canFetch');
             }));
-        if (defaultLimit) {
+        if (noDefaultLimit) {
             this._throttles.default = {
                 enqueue: item => {
                     super.enqueue(item);
-                    // TODO: debounce
-                    this.spider.emit('canFetch');
+                    // XXX: debounce ?
+                    // this._spider.debounceEmit('canFetch');
+                    this._spider.emit('canFetch');
                 }
             } as RequestThrottle;
         }
@@ -74,9 +74,8 @@ export default class Source extends Queue<Request> {
     }
 
     schedule(cron: string, uri: Request) {
-        let job = scheduleJob(cron, () => {
-            this._throttles.default.enqueue(uri)
-        });
+        let job = scheduleJob(cron, () =>
+            this._throttles.default.enqueue(uri));
 
         this._jobs.push(job);
         return this;
@@ -92,10 +91,7 @@ export default class Source extends Queue<Request> {
     }
 
     toArray() {
-        return _.chain(this._throttles)
-            .map(item => item.toArray())
-            .push(this.list.toArray())
-            .flatten()
-            .value();
+        throw new Error('Source can\'t tranform to Array.');
+        return [];
     }
 }

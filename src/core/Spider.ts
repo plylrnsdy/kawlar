@@ -11,6 +11,20 @@ import { Selector } from './selector';
 import _ = require('lodash');
 
 
+interface Stat {
+    start: number
+    lastestStart: number
+    runtime: number
+    finish: number
+
+    enqueued: number
+    requested: number
+    handled: number
+    piped: number
+
+    error: number
+}
+
 export interface Items extends Record<string, any> {
     $response: Response & Selector
 }
@@ -19,60 +33,79 @@ export interface IHandler extends Record<string, any> {
     pattern: RegExp | string
     headers?: Request
     useAgent?: boolean
-    // TODO
+    // TODO: fail then retries
     retries?: number
     handle: (response: Response & Selector, items: Items) => void
     except?: IHandler[]
 }
 
 interface SpiderOptions {
+    level?: string
     rateLimit?: [number, number] | { [host: string]: [number, number] }
     agents?: Array<HttpAgent | HttpsAgent>
     handlers: IHandler[]
     pipelines?: Array<(items: Items) => void>
 }
 
-const noLimit: [number, number] = [-1, -1]
+const noLimit: [number, number] = [-1, -1];
 
 export default class Spider extends EventEmitter {
 
     private _active: boolean = false
+    private _stat: Stat = {
+        start: 0,
+        lastestStart: 0,
+        runtime: 0,
+        finish: 0,
+
+        enqueued: 0,
+        requested: 0,
+        handled: 0,
+        piped: 0,
+
+        error: 0,
+    }
 
     private _source: Source
     private _downloader: Downloader
-    handlers: Handler
+    private _pipeline: Array<(items: Items) => void>
 
-    constructor(private options: SpiderOptions) {
+    constructor(options: SpiderOptions) {
         super();
+        logger.setLevel(options.level || 'info');
         logger.info('Initializing...');
 
-        let rateLimit = options.rateLimit;
+        let { rateLimit } = options;
         rateLimit
-            ? isArray(rateLimit) && (rateLimit = { default: rateLimit })
+            ? isArray(rateLimit)
+                ? rateLimit = { default: rateLimit }
+                : rateLimit.default || (rateLimit.default = noLimit)
             : rateLimit = { default: noLimit };
-        this._source = new Source(rateLimit);
-        this._source.spider = this;
-        delete options.rateLimit;
+        this._source = new Source(this, rateLimit);
 
-        this._downloader = new Downloader(options.agents);
-        this._downloader.spider = this;
-        this._downloader.init();
-        delete options.agents;
+        this._downloader = new Downloader(this, options.agents, new Handler(options.handlers));
 
-        this.handlers = new Handler(options.handlers);
-        delete options.handlers;
+        this._pipeline = options.pipelines || [];
+
+        this.on('schedule', (url: string) => logger.log('schedule:', url));
+        this.on('enqueue', (url: string) => { ++this._stat.enqueued; logger.log('enqueue:', url); });
+        this.on('request', (url: string) => { ++this._stat.requested; logger.log('request:', url); });
+        this.on('handle', (url: string) => { ++this._stat.handled; logger.log('handle:', url); });
+        this.on('pipe', (url: string) => { ++this._stat.piped; logger.log('pipe:', url); });
     }
+
+    // debounceEmit = _.debounce((event: string) => this.emit(event), 300);
 
     schedule(cron: string, uri: string | Request) {
         isString(uri) && (uri = new Request(uri));
-        logger.log('schedule:', uri.url);
+        this.emit('schedule', uri.url);
         this._source.schedule(cron, uri);
         return this;
     }
     enqueue(...uris: Array<string | Request>) {
         uris = _.map(uris, uri => {
             isString(uri) && (uri = new Request(uri));
-            logger.log('enqueue:', uri.url);
+            this.emit('enqueue', uri.url);
             return uri;
         });
         this._source.enqueue(...uris as Request[]);
@@ -91,20 +124,27 @@ export default class Spider extends EventEmitter {
     start() {
         logger.info('starting...');
         this._active = true;
+        this._stat.lastestStart = Date.now();
+        this._stat.start || (this._stat.start = this._stat.lastestStart);
         this._downloader.start();
         return this;
     }
     stop() {
         this._active = false;
+        this._stat.runtime += Date.now() - this._stat.lastestStart;
+        return this;
+    }
+    finish() {
+        this.stop();
+        this._stat.finish = Date.now();
         return this;
     }
 
     async pipe(items: Items) {
-        let { pipelines } = this.options;
-        if (!pipelines) return;
+        if (!this._pipeline) return;
 
-        logger.log('piping:', items.$response.url);
-        for (let line of pipelines) {
+        this.emit('pipe', items.$response.url);
+        for (let line of this._pipeline) {
             await line(items);
         }
     }

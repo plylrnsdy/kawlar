@@ -29,19 +29,19 @@ export default class Handler {
         this._tree = tree as IRegExpHandler[];
     }
 
-    search(uri: Request): IRegExpHandler {
+    search(url: string): IRegExpHandler {
         let match: IRegExpHandler | undefined = undefined;
         let handlers = this._tree;
 
         find: do {
             for (let handler of handlers)
-                if (handler.pattern.test(uri.url)) {
+                if (handler.pattern.test(url)) {
                     match = handler;
                     if (handler.except) handlers = handler.except; else break find;
                 }
         } while (match);
 
-        if (!match) throw new Error(`No handler for: ${uri.url}`);
+        if (!match) throw new Error(`No handler for: ${url}`);
 
         return match;
     }
