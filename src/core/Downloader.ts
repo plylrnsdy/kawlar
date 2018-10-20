@@ -1,7 +1,7 @@
 import _ = require('lodash');
 import fetch from 'node-fetch';
-import logger from '../util/logger';
 import Handler from './Handler';
+import Items from './Items';
 import selectorify from './selector';
 import sleep from '../common/sleep';
 import Spider from './Spider';
@@ -63,9 +63,10 @@ export default class Downloader {
 
         // decorate response
         let res = selectorify(response);
-        let items = { $response: res };
-        // distribute response
+
         this._spider.emit('handle', url);
+        let items = new Items(res);
+        // distribute response
         handler.handle.call(this._spider, res, items);
     }
     private currentAgent(useAgent?: boolean) {

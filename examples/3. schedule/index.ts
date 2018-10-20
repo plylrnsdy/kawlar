@@ -3,10 +3,9 @@ import Spider from '../../src/core/Spider';
 new Spider({
     handlers: [{
         pattern: '**',
-        handle: response => {
-            response
-                .xpath('//h1')
-                .then(title => console.log(title as string));
+        handle: async response => {
+            let title = await response.xpath('//h1') as string;
+            console.log(title as string);
         },
     }],
 })

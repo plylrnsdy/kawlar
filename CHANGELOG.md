@@ -1,8 +1,9 @@
 # Change Log
 
-## 0.4.1.5
+## 0.4.1.6
 + Add `options.level` limit logger's output;
-+ Add counting about fetching operations.
++ Add counting about fetching operations;
++ Add class `Items`.
 
 ## 0.4.1.3
 + Add output to terminal;

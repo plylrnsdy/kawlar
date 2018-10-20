@@ -1,5 +1,7 @@
+import _ = require('lodash');
 import Downloader from './Downloader';
 import Handler from './Handler';
+import Items from './Items';
 import logger from '../util/logger';
 import Source from './Source';
 import { Agent as HttpAgent } from 'http';
@@ -8,7 +10,6 @@ import { EventEmitter } from 'events';
 import { isArray, isString } from 'util';
 import { Request, Response } from 'node-fetch';
 import { Selector } from './selector';
-import _ = require('lodash');
 
 
 interface Stat {
@@ -23,10 +24,6 @@ interface Stat {
     piped: number
 
     error: number
-}
-
-export interface Items extends Record<string, any> {
-    $response: Response & Selector
 }
 
 export interface IHandler extends Record<string, any> {

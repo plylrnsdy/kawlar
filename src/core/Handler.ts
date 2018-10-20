@@ -1,5 +1,6 @@
 import * as micromatch from 'micromatch';
-import { IHandler, Items } from './Spider';
+import Items from './Items';
+import { IHandler } from './Spider';
 import { isString } from 'util';
 import { Request, Response } from 'node-fetch';
 import { Selector } from './selector';
