@@ -1,3 +1,5 @@
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import _ = require('lodash');
 import Downloader from './Downloader';
 import Handler from './Handler';
@@ -10,6 +12,8 @@ import { EventEmitter } from 'events';
 import { isArray, isString } from 'util';
 import { Request, Response } from 'node-fetch';
 import { Selector } from './selector';
+import stringify from '../common/stringify';
+import sleep from '../common/sleep';
 
 
 interface Stat {
@@ -22,6 +26,7 @@ interface Stat {
     requested: number
     handled: number
     piped: number
+    completed: number
 
     error: number
 }
@@ -36,12 +41,13 @@ export interface IHandler extends Record<string, any> {
     except?: IHandler[]
 }
 
-interface SpiderOptions {
+export interface SpiderOptions {
     level?: string
     rateLimit?: [number, number] | { [host: string]: [number, number] }
     agents?: Array<HttpAgent | HttpsAgent>
     handlers: IHandler[]
     pipelines?: Array<(items: Items) => void>
+    root?: string
 }
 
 const noLimit: [number, number] = [-1, -1];
@@ -59,13 +65,15 @@ export default class Spider extends EventEmitter {
         requested: 0,
         handled: 0,
         piped: 0,
+        completed: 0,
 
         error: 0,
     }
+    private _dataFileName: string = 'project.json'
 
     private _source: Source
     private _downloader: Downloader
-    private _pipeline: Array<(items: Items) => void>
+    private _root: string
 
     constructor(options: SpiderOptions) {
         super();
@@ -80,15 +88,35 @@ export default class Spider extends EventEmitter {
             : rateLimit = { default: noLimit };
         this._source = new Source(this, rateLimit);
 
-        this._downloader = new Downloader(this, options.agents, new Handler(options.handlers));
+        this._downloader = new Downloader(this, options.agents, new Handler(options.handlers), options.pipelines || []);
 
-        this._pipeline = options.pipelines || [];
+        this._root = options.root || __dirname;
+        let dataPath = path.join(this._root, this._dataFileName);
+        if (fs.existsSync(dataPath)) {
+            let { stat, source: { jobs, queue } } = fs.readJsonSync(dataPath);
+            this._stat = stat;
+            for (let [cron, uri] of jobs) {
+                this.schedule(cron, uri);
+            }
+            this.enqueue(...queue);
+        }
 
-        this.on('schedule', (url: string) => logger.log('schedule:', url));
-        this.on('enqueue', (url: string) => { ++this._stat.enqueued; logger.log('enqueue:', url); });
-        this.on('request', (url: string) => { ++this._stat.requested; logger.log('request:', url); });
-        this.on('handle', (url: string) => { ++this._stat.handled; logger.log('handle:', url); });
-        this.on('pipe', (url: string) => { ++this._stat.piped; logger.log('pipe:', url); });
+        this.on('schedule', (url: string) => logger.log('Schedule:', url));
+        this.on('enqueue', (url: string) => { ++this._stat.enqueued; logger.log('Enqueue:', url); });
+        this.on('request', (url: string) => { ++this._stat.requested; logger.log('Request:', url); });
+        this.on('handle', (url: string) => { ++this._stat.handled; logger.log('Handle:', url); });
+        this.on('pipe', (url: string) => { ++this._stat.piped; logger.log('Pipe:', url); });
+        this.on('complete', (url: string) => { ++this._stat.completed; logger.log('Complete:', url); });
+
+        this.on('start', () => {
+            logger.info('Starting...');
+            this._stat.lastestStart = Date.now();
+            this._stat.start || (this._stat.start = this._stat.lastestStart);
+        });
+        this.on('stop', () => {
+            logger.info('Stoping...');
+            this._stat.runtime += Date.now() - this._stat.lastestStart;
+        });
     }
 
     // debounceEmit = _.debounce((event: string) => this.emit(event), 300);
@@ -115,34 +143,38 @@ export default class Spider extends EventEmitter {
         return this._source.isEmpty();
     }
 
+    get stat() {
+        return Object.assign({}, this._stat);
+    }
     get active() {
         return this._active;
     }
     start() {
-        logger.info('starting...');
+        this.emit('start');
         this._active = true;
-        this._stat.lastestStart = Date.now();
-        this._stat.start || (this._stat.start = this._stat.lastestStart);
         this._downloader.start();
         return this;
     }
     stop() {
         this._active = false;
-        this._stat.runtime += Date.now() - this._stat.lastestStart;
+        this.emit('stop');
+        this._save();
         return this;
     }
-    finish() {
+    async finish() {
         this.stop();
         this._stat.finish = Date.now();
-        return this;
+        this.emit('finish');
+        setInterval(() => !this._downloader.downloading && process.exit(), 300);
     }
-
-    async pipe(items: Items) {
-        if (!this._pipeline) return;
-
-        this.emit('pipe', items.$response.url);
-        for (let line of this._pipeline) {
-            await line(items);
-        }
+    private _save() {
+        let data = this.toString();
+        fs.writeFileSync(path.join(this._root, this._dataFileName), data);
+    }
+    toString() {
+        return stringify({
+            stat: this._stat,
+            source: this._source,
+        });
     }
 }

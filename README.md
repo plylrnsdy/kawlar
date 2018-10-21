@@ -6,7 +6,8 @@ A spider framework for Node.js.
 
 - Set different handler for extracting data from the page's url which match different patterns;
 - Set same handler for saving data in pipeline;
-- Schedule task fetching in specify time, according to [`cron`](https://github.com/node-schedule/node-schedule#cron-style-scheduling).
+- Schedule task fetching in specify time, according to [`cron`](https://github.com/node-schedule/node-schedule#cron-style-scheduling);
+- Stop a spider, save the state to `project.json`, and recover from `project.json`.
 
 ## Useage
 
@@ -32,6 +33,7 @@ Create a Spider for fetching page.
 
 #### options
 - `level`: Show output which level greater or equal to `level`. It can be `log`, `trace`, `debug`, `info`(default), `warn`, `error`, `fatal`.
+- `rateLimit`: Limit spider's requesting one *host* *x* times in *y* second, `{ host: [x, y], ... }`.
 - `handlers`: A array of `handler`, defined how to `handle` url which matches `pattern`.
     - `handler`:
         - `pattern`: Can be `RegExp` or [`globs`](https://github.com/isaacs/node-glob).
@@ -65,6 +67,14 @@ Create a Spider for fetching page.
 ### Spider#start()
 
 Start to fetch the `uri` in queue.
+
+### Spider#stop()
+
+Stop, waiting for executing `start()`.
+
+### Spider#finish()
+
+Stop, save state to `project.json` and exit.
 
 ## Install
 

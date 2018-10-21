@@ -15,12 +15,12 @@ new Spider({
     }, {
         pattern: 'https://nodejs.org/api/*',
         handle: async function (response, items) {
-            this.pipe(items.pack({
+            items.pack({
                 html: await response.cssModel({
                     title: 'title::text()',
                     body: '#column1>div::html()'
                 })
-            }));
+            });
         },
     }],
     pipelines: [

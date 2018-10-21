@@ -13,6 +13,8 @@ interface Result<T> {
     [key: string]: T | Result<T>
 }
 
+// TODO: class Selector use `xpath` implements css() & xpath()
+// TODO: Selector #first() #nth() #last() #range() #all() #filter
 export interface Selector {
     css(selector: string): Promise<string | string[]>
     cssModel(model: Model<string>): Promise<Result<string | string[]>>
@@ -25,7 +27,7 @@ export interface Selector {
 }
 
 export default function selectorify(response: Response): Response & Selector {
-    let res = response as Response & Selector
+    let res = response as Response & Selector;
     Object.assign(res, { css, cssModel, xpath, xpathModel, re, reModel });
     return res;
 }

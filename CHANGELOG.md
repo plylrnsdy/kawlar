@@ -1,11 +1,12 @@
 # Change Log
 
-## 0.4.1.6
+## 0.4.1-8
 + Add `options.level` limit logger's output;
 + Add counting about fetching operations;
-+ Add class `Items`.
++ Add class `Items`;
++ Add stoping and recovering support.
 
-## 0.4.1.3
+## 0.4.1-4
 + Add output to terminal;
 * Change `response { css.model(), xpath.model(), re.model() }` to `response { cssModel(), xpathModel(), reModel() }`;
 * Fix `response.xpath()` getter likes `/@href` will return `Atrr` instead of its value;

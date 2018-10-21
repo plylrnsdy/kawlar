@@ -1,6 +1,7 @@
 import _ = require('lodash');
 import Queue from '../common/collection/Queue';
 import Spider from './Spider';
+import stringify from '../common/stringify';
 import { Request } from 'node-fetch';
 import { scheduleJob, Job } from 'node-schedule';
 
@@ -44,9 +45,9 @@ export default class Source extends Queue<Request> {
 
     // throttle request by host
     private _throttles: { [host: string]: RequestThrottle }
-    private _jobs: Job[] = []
+    private _jobs: Array<Job & { _cron: string, _uri: string }> = []
 
-    constructor(private _spider: Spider, rateLimits: { [host: string]: [number, number] }, array?: Request[]) {
+    constructor(private _spider: Spider, rateLimits: { [host: string]: [number, number] }) {
         super();
 
         let noDefaultLimit;
@@ -66,16 +67,18 @@ export default class Source extends Queue<Request> {
                     // XXX: debounce ?
                     // this._spider.debounceEmit('canFetch');
                     this._spider.emit('canFetch');
-                }
+                },
+                toArray: () => this.list.toArray(),
             } as RequestThrottle;
         }
-
-        array && this.enqueue(...array);
     }
 
     schedule(cron: string, uri: Request) {
         let job = scheduleJob(cron, () =>
-            this._throttles.default.enqueue(uri));
+            this._throttles.default.enqueue(uri)) as Job & { _cron: string, _uri: string };
+
+        job._cron = cron;
+        job._uri = uri.url;
 
         this._jobs.push(job);
         return this;
@@ -93,5 +96,15 @@ export default class Source extends Queue<Request> {
     toArray() {
         throw new Error('Source can\'t tranform to Array.');
         return [];
+    }
+    toString() {
+        return stringify({
+            jobs: _.map(this._jobs, job => [job._cron, job._uri]),
+            queue: _.chain(this._throttles)
+                .map(item => item.toArray())
+                .flatten()
+                .map(request => request.url)
+                .value()
+        });
     }
 }

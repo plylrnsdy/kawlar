@@ -25,4 +25,5 @@ const logger = tracer.colorConsole({
 
 logger.setLevel = tracer.setLevel;
 
+// TODO: new logger
 export default logger;

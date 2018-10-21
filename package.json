@@ -2,7 +2,7 @@
   "name": "seeker",
   "description": "A modular spider in Node.js.",
   "author": "plylrnsdy",
-  "version": "0.4.1.6",
+  "version": "0.4.1-8",
   "keywords": [
     "crawler",
     "spider"

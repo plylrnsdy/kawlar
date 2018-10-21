@@ -26,8 +26,7 @@ export default class Handler {
             handler.except && handlers.push(...handler.except);
         }
 
-        // @ts-ignore
-        this._tree = tree as IRegExpHandler[];
+        this._tree = tree as any as IRegExpHandler[];
     }
 
     search(url: string): IRegExpHandler {
