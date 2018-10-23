@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.5.0-1
+* Replace `response { css(), xpath(), re(), cssModel(), xpathModel(), reModel() }` with [`xselector`](https://github.com/plylrnsdy/xselector);
+* Fix no handler will throw error, now it will print a warning information.
+
 ## 0.4.1-8
 + Add `options.level` limit logger's output;
 + Add counting about fetching operations;

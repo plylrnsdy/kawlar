@@ -37,7 +37,7 @@ class RequestThrottle extends Queue<Request> {
     }
 }
 
-function getHost(uri: Request) {
+function getDomain(uri: Request) {
     return (<RegExpMatchArray>uri.url.match(/^https?:\/\/(?:www\.)?([^/]+)/))[1];
 }
 
@@ -85,8 +85,8 @@ export default class Source extends Queue<Request> {
     }
     enqueue(...items: Request[]) {
         items.forEach(uri => {
-            let host = getHost(uri);
-            let key = host in this._throttles ? host : 'default';
+            let domain = getDomain(uri);
+            let key = domain in this._throttles ? domain : 'default';
             this._throttles[key].enqueue(uri);
         });
 

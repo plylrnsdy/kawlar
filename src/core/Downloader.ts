@@ -8,7 +8,6 @@ import Spider from './Spider';
 import { Agent as HttpAgent } from 'http';
 import { Agent as HttpsAgent } from 'https';
 import { Request } from 'node-fetch';
-import logger from '../util/logger';
 
 
 export default class Downloader {
@@ -25,7 +24,7 @@ export default class Downloader {
         private _spider: Spider,
         private _agents: Array<HttpAgent | HttpsAgent> = [],
         private _handler: Handler,
-        private _pipelines: Array<(items: Items) => void>) {
+        private _pipelines?: Array<(items: Items) => void>) {
 
         _spider.on('canFetch', () => {
             this._idle = false;
@@ -64,8 +63,10 @@ export default class Downloader {
         let handler = this._handler.search(url);
 
         // build request
-        _.defaults(uri, handler.headers);
-        uri.agent = this.currentAgent(handler.useAgent);
+        if (handler) {
+            _.defaults(uri, handler.headers);
+            uri.agent = this.currentAgent(handler.useAgent);
+        }
         // request
         this._spider.emit('request', url);
         let response = await fetch(uri);
@@ -73,11 +74,15 @@ export default class Downloader {
         // decorate response
         let res = selectorify(response);
 
-        this._spider.emit('handle', url);
-        let items = new Items(res);
-        // distribute response
-        await handler.handle.call(this._spider, res, items);
-        this.pipe(items);
+        if (handler) {
+            this._spider.emit('handle', url);
+            let items = new Items(res);
+            // distribute response
+            await handler.handle.call(this._spider, res, items);
+
+            this.pipe(items);
+        }
+        this._spider.emit('complete', response.url);
     }
     private currentAgent(useAgent?: boolean) {
         // Using pseudo random numbers to evenly access agents
@@ -92,6 +97,5 @@ export default class Downloader {
                 await line(items);
             }
         }
-        this._spider.emit('complete', items.$response.url);
     }
 }

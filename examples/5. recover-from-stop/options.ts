@@ -9,8 +9,8 @@ export default {
     handlers: [{
         pattern: '**',
         handle: async function (response) {
-            let title = await response.xpath('//h1') as string;
-            logger.info(title as string);
+            let title = await response.xpath('//h1');
+            logger.info(title.text());
             this.enqueue('https://httpbin.org/html');
         },
     }],

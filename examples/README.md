@@ -16,6 +16,6 @@ Fetch a page one time in every minute.
 
 Limit fetching pages rate at a host.
 
-## 5. Stop fetching and the recover
+## 5. Stop fetching and then recover
 
 Stop spider, save the state in `project.json`, and your can recover from `project.json`.

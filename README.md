@@ -6,7 +6,7 @@ A spider framework for Node.js.
 
 - Set different handler for extracting data from the page's url which match different patterns;
 - Set same handler for saving data in pipeline;
-- Schedule task fetching in specify time, according to [`cron`](https://github.com/node-schedule/node-schedule#cron-style-scheduling);
+- Schedule task fetching in specify time, according to [`cron`][cron];
 - Stop a spider, save the state to `project.json`, and recover from `project.json`.
 
 ## Useage
@@ -17,13 +17,15 @@ new Spider({
         pattern: 'https://github.com/*/*',
         handle: async response => {
             let title = await response.xpath('//title/text()');
-            console.log(title);
+            console.log(title.value());
         },
     }],
 })
     .enqueue('https://github.com/plylrnsdy/seeker')
     .start();
 ```
+
+More [examples](https://github.com/plylrnsdy/seeker/tree/master/examples).
 
 ## API
 
@@ -33,22 +35,19 @@ Create a Spider for fetching page.
 
 #### options
 - `level`: Show output which level greater or equal to `level`. It can be `log`, `trace`, `debug`, `info`(default), `warn`, `error`, `fatal`.
-- `rateLimit`: Limit spider's requesting one *host* *x* times in *y* second, `{ host: [x, y], ... }`.
+- `rateLimit`: Limit spider's requesting one *domain* *x* times in *y* second, `{ domain: [x, y], ... }`.
 - `handlers`: A array of `handler`, defined how to `handle` url which matches `pattern`.
     - `handler`:
-        - `pattern`: Can be `RegExp` or [`globs`](https://github.com/isaacs/node-glob).
+        - `pattern`: Can be `RegExp` or [`globs`][globs].
         - `headers`: Request headers.
         - `handle(response, items)`: A function to handle response.
             - `this`: The instance of `Spider`.
                 - `enqueue(uri)`
-                - `pipe(items)`: Pass `items` to pipeline
-            - `response`: See [`node-fetch`](https://github.com/bitinn/node-fetch).
-                - `css(selector)`
-                - `xpath(path)`
-                - `re(regexp)`
-                - `cssModel(model)`
-                - `xpathModel(model)`
-                - `reModel(model)`
+            - [`response`][Response]:
+                - `css(selector)`: [SelectedList][SelectedList]
+                - `xpath(path)`: [SelectedList][SelectedList]
+                - `regexp(regexp)`: string
+                - `regexps(regexp)`: string[]
             - `items`:
                 - `pack(object)`
                 - `unpack(props)`
@@ -57,12 +56,12 @@ Create a Spider for fetching page.
 
 ### Spider#enqueue(uri)
 
-- `uri` string | Request: A page's uri, which you want to fetch.
+- `uri` string | [Request][Request]: A page's uri, which you want to fetch.
 
 ### Spider#schedule(cron, uri)
 
-- [`cron`](https://github.com/node-schedule/node-schedule#cron-style-scheduling) string: Cron-style string.
-- `uri` string | Request: A page's uri, which you want to fetch.
+- [`cron`][cron] string: Cron-style string.
+- `uri` string | [Request][Request]: A page's uri, which you want to fetch.
 
 ### Spider#start()
 
@@ -74,7 +73,7 @@ Stop, waiting for executing `start()`.
 
 ### Spider#finish()
 
-Stop, save state to `project.json` and exit.
+Stop, save the state to `project.json` and exit.
 
 ## Install
 
@@ -105,3 +104,8 @@ Github：[seeker][repository]
 
 [issues]:https://github.com/plylrnsdy/seeker/issues
 [repository]:https://github.com/plylrnsdy/seeker
+[cron]:https://github.com/node-schedule/node-schedule#cron-style-scheduling
+[globs]:https://github.com/isaacs/node-glob#glob-primer
+[Request]:https://github.com/bitinn/node-fetch#class-request
+[Response]:https://github.com/bitinn/node-fetch#class-response
+[SelectedList]:https://github.com/plylrnsdy/xselector#class-selectorlist

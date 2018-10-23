@@ -14,8 +14,8 @@ new Spider({
     handlers: [{
         pattern: 'https://github.com/*/*',
         handle: async function (response, items) {
-            let page = await response.xpath('//article') as string;
-            items.pack({ markdown: page });
+            let page = await response.xpath('//article');
+            items.pack({ markdown: page.html() });
         },
     }],
     pipelines: [

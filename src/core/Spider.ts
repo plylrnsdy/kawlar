@@ -6,14 +6,13 @@ import Handler from './Handler';
 import Items from './Items';
 import logger from '../util/logger';
 import Source from './Source';
+import stringify from '../common/stringify';
 import { Agent as HttpAgent } from 'http';
 import { Agent as HttpsAgent } from 'https';
 import { EventEmitter } from 'events';
 import { isArray, isString } from 'util';
 import { Request, Response } from 'node-fetch';
-import { Selector } from './selector';
-import stringify from '../common/stringify';
-import sleep from '../common/sleep';
+import { ISelector } from './selector';
 
 
 interface Stat {
@@ -37,15 +36,17 @@ export interface IHandler extends Record<string, any> {
     useAgent?: boolean
     // TODO: fail then retries
     retries?: number
-    handle: (response: Response & Selector, items: Items) => void
+    handle: (response: Response & ISelector, items: Items) => void
     except?: IHandler[]
 }
 
 export interface SpiderOptions {
     level?: string
-    rateLimit?: [number, number] | { [host: string]: [number, number] }
+    // TODO: de-duplication
+    isDuplicate?: (uri: Request) => boolean
+    rateLimit?: [number, number] | { [domain: string]: [number, number] }
     agents?: Array<HttpAgent | HttpsAgent>
-    handlers: IHandler[]
+    handlers?: IHandler[]
     pipelines?: Array<(items: Items) => void>
     root?: string
 }
@@ -75,7 +76,7 @@ export default class Spider extends EventEmitter {
     private _downloader: Downloader
     private _root: string
 
-    constructor(options: SpiderOptions) {
+    constructor(options: SpiderOptions = {}) {
         super();
         logger.setLevel(options.level || 'info');
         logger.info('Initializing...');
@@ -88,7 +89,7 @@ export default class Spider extends EventEmitter {
             : rateLimit = { default: noLimit };
         this._source = new Source(this, rateLimit);
 
-        this._downloader = new Downloader(this, options.agents, new Handler(options.handlers), options.pipelines || []);
+        this._downloader = new Downloader(this, options.agents, new Handler(options.handlers), options.pipelines);
 
         this._root = options.root || __dirname;
         let dataPath = path.join(this._root, this._dataFileName);

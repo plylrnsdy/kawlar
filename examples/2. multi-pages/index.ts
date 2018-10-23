@@ -8,18 +8,18 @@ new Spider({
     level: 'log',
     handlers: [{
         pattern: 'https://nodejs.org/api/',
-        handle: async function (response, items) {
+        handle: async function (response) {
             let links = await response.xpath('//*[@id="column2"]/ul[2]//a/@href');
-            this.enqueue(..._.map(links, link => response.url + link));
+            this.enqueue(...links.values());
         },
     }, {
         pattern: 'https://nodejs.org/api/*',
         handle: async function (response, items) {
             items.pack({
-                html: await response.cssModel({
-                    title: 'title::text()',
-                    body: '#column1>div::html()'
-                })
+                html: {
+                    title: (await response.css('title')).text(),
+                    body: (await response.xpath('#column1>div')).html(),
+                }
             });
         },
     }],

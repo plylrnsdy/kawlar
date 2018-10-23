@@ -4,8 +4,8 @@ new Spider({
     handlers: [{
         pattern: '**',
         handle: async response => {
-            let title = await response.xpath('//h1') as string;
-            console.log(title as string);
+            let title = await response.xpath('//h1');
+            console.log(title.text());
         },
     }],
 })

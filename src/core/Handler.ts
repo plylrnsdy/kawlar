@@ -3,14 +3,15 @@ import Items from './Items';
 import { IHandler } from './Spider';
 import { isString } from 'util';
 import { Request, Response } from 'node-fetch';
-import { Selector } from './selector';
+import { ISelector } from './selector';
+import logger from '../util/logger';
 
 
 interface IRegExpHandler {
     pattern: RegExp
     headers?: Request
     useAgent?: boolean
-    handle: (response: Response & Selector, items: Items) => void
+    handle: (response: Response & ISelector, items: Items) => void
     except?: IRegExpHandler[]
 }
 
@@ -18,7 +19,7 @@ export default class Handler {
 
     private _tree: IRegExpHandler[]
 
-    constructor(tree: IHandler[]) {
+    constructor(tree: IHandler[] = []) {
         let handlers = tree.slice();
         let handler;
         while (handler = handlers.pop()) {
@@ -29,7 +30,7 @@ export default class Handler {
         this._tree = tree as any as IRegExpHandler[];
     }
 
-    search(url: string): IRegExpHandler {
+    search(url: string): IRegExpHandler | undefined {
         let match: IRegExpHandler | undefined = undefined;
         let handlers = this._tree;
 
@@ -41,7 +42,7 @@ export default class Handler {
                 }
         } while (match);
 
-        if (!match) throw new Error(`No handler for: ${url}`);
+        match || logger.warn(`No handler for: ${url}`);
 
         return match;
     }
