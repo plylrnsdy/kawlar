@@ -45,5 +45,5 @@ new Spider({
         },
     ],
 })
-    .enqueue('https://github.com/plylrnsdy/seeker')
+    .enqueue('https://github.com/plylrnsdy/kawlar')
     .start()

@@ -1,6 +1,6 @@
-# Seeker
+# Kawlar
 
-A spider framework for Node.js.
+A crawler framework for Node.js.
 
 ## Feature
 
@@ -21,11 +21,11 @@ new Spider({
         },
     }],
 })
-    .enqueue('https://github.com/plylrnsdy/seeker')
+    .enqueue('https://github.com/plylrnsdy/kawlar')
     .start();
 ```
 
-More [examples](https://github.com/plylrnsdy/seeker/tree/master/examples).
+More [examples](https://github.com/plylrnsdy/kawlar/tree/master/examples).
 
 ## API
 
@@ -79,7 +79,7 @@ Stop, save the state to `project.json` and exit.
 
 Download:
 
-    git clone https://github.com/plylrnsdy/seeker.git
+    git clone https://github.com/plylrnsdy/kawlar.git
 
 Install:
 
@@ -99,11 +99,11 @@ Or fork the [repo][repository] and submit pull requests.
 
 Author：plylrnsdy
 
-Github：[seeker][repository]
+Github：[kawlar][repository]
 
 
-[issues]:https://github.com/plylrnsdy/seeker/issues
-[repository]:https://github.com/plylrnsdy/seeker
+[issues]:https://github.com/plylrnsdy/kawlar/issues
+[repository]:https://github.com/plylrnsdy/kawlar
 [cron]:https://github.com/node-schedule/node-schedule#cron-style-scheduling
 [globs]:https://github.com/isaacs/node-glob#glob-primer
 [Request]:https://github.com/bitinn/node-fetch#class-request

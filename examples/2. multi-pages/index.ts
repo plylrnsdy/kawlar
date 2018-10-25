@@ -9,8 +9,9 @@ new Spider({
     handlers: [{
         pattern: 'https://nodejs.org/api/',
         handle: async function (response) {
+            let { url } = response;
             let links = await response.xpath('//*[@id="column2"]/ul[2]//a/@href');
-            this.enqueue(...links.values());
+            this.enqueue(...links.values().map(value => url + value));
         },
     }, {
         pattern: 'https://nodejs.org/api/*',
@@ -18,7 +19,7 @@ new Spider({
             items.pack({
                 html: {
                     title: (await response.css('title')).text(),
-                    body: (await response.xpath('#column1>div')).html(),
+                    body: (await response.css('#column1>div')).html(),
                 }
             });
         },
