@@ -103,14 +103,14 @@ export default class Spider extends EventEmitter {
         }
 
         this.on('schedule', (url: string) => logger.log('Schedule:', url));
-        this.on('enqueue', (url: string) => { ++this._stat.enqueued; logger.log('Enqueue:', url); });
-        this.on('request', (url: string) => { ++this._stat.requested; logger.info('Request:', url); });
-        this.on('handle', (url: string) => { ++this._stat.handled; logger.log('Handle:', url); });
-        this.on('pipe', (url: string) => { ++this._stat.piped; logger.log('Pipe:', url); });
+        this.on('enqueue', (url: string) => { ++this._stat.enqueued; logger.log('Enqueue :', url); });
+        this.on('request', (url: string) => { ++this._stat.requested; logger.info('Request :', url); });
+        this.on('handle', (url: string) => { ++this._stat.handled; logger.log('Handle  :', url); });
+        this.on('pipe', (url: string) => { ++this._stat.piped; logger.log('Pipe    :', url); });
         this.on('complete', (url: string) => { ++this._stat.completed; logger.log('Complete:', url); });
 
         // TODO: error handle
-        this.on('error', (error: Error) => { ++this._stat.error; logger.error(error.message); });
+        this.on('error', (error: Error) => { ++this._stat.error; logger.error(error); });
 
         this.on('start', () => {
             logger.info('Starting...');

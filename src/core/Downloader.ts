@@ -77,8 +77,12 @@ export default class Downloader {
         if (handler) {
             this._spider.emit('handle', url);
             let items = new Items(res);
-            // distribute response
-            await handler.handle.call(this._spider, res, items);
+            try {
+                // distribute response
+                await handler.handle.call(this._spider, res, items);
+            } catch (error) {
+                this._spider.emit('error', error);
+            }
 
             this.pipe(items);
         }

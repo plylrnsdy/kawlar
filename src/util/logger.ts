@@ -1,10 +1,9 @@
-import * as tracer from 'tracer';
+import _ = require('lodash');
+import * as trailer from 'node-trailer';
 
 interface Logger {
-    setLevel(level: string): void
-
+    setLevel(minLevel: string): void
     log(...args: any[]): void
-    trace(...args: any[]): void
     debug(...args: any[]): void
     info(...args: any[]): void
     warn(...args: any[]): void
@@ -12,18 +11,6 @@ interface Logger {
     fatal(...args: any[]): void
 }
 
-const logger = tracer.colorConsole({
-    level: 0,
-    format: ['[{{timestamp}} {{title}}] {{message}}    @ {{method}} ({{file}}:{{line}})',
-        {
-            info: '[{{timestamp}} {{title}}] {{message}}',
-            error: '[{{timestamp}} {{title}}] @ {{method}} ({{file}}:{{line}})\n    {{message}}\n    ----------\n{{stack}}'
-        }],
-    dateformat: 'yyyy-mm-dd_hh:MM:ss',
-    preprocess: (data: any) => data.title = data.title.toUpperCase(),
-}) as any as Logger;
+const logger = trailer.create();
 
-logger.setLevel = tracer.setLevel;
-
-// TODO: new logger
-export default logger;
+export default logger as any as Logger;
