@@ -1,9 +1,10 @@
 # Change Log
 
-## 0.5.0-4
+## 0.5.0-5
 * Rename repo as `kawlar`;
 + Simple error catch for handlers;
-* New logger using `node-trailer`.
+* New logger using `node-trailer`;
+* Correct logger mini-stack.
 
 ## 0.5.0-1
 * Replace `response { css(), xpath(), re(), cssModel(), xpathModel(), reModel() }` with [`xselector`](https://github.com/plylrnsdy/xselector);

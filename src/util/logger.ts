@@ -11,6 +11,13 @@ interface Logger {
     fatal(...args: any[]): void
 }
 
+let h5 = trailer.handlers.stack.filterTop(3);
+let defaultOptions = trailer.defaultOptions;
+(<Function[]>defaultOptions.default.handlers)[4] = h5;
+(<Function[]>defaultOptions.debug.handlers)[4] = h5;
+(<Function[]>defaultOptions.info.handlers)[4] = h5;
+(<Function[]>defaultOptions.warn.handlers)[4] = h5;
+
 const logger = trailer.create();
 
 export default logger as any as Logger;
